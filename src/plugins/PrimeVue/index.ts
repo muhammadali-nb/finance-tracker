@@ -14,6 +14,7 @@ import { inputFieldPt } from './input';
 import { inputNumberConfig, inputNumberPt } from './inputNumber';
 import { messageConfig } from './message';
 import { selectConfig, selectPt } from './select';
+import { selectButtonConfig } from './selectButton';
 import { toggleButtonConfig, toggleButtonPt } from './toggleButton';
 
 const customPreset = definePreset(Aura, {
@@ -147,6 +148,8 @@ const customPreset = definePreset(Aura, {
     },
 
     select: selectConfig(),
+
+    selectbutton: selectButtonConfig(),
 
     togglebutton: toggleButtonConfig(),
 

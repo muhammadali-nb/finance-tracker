@@ -5,6 +5,8 @@ import loadingIcon from './loading.svg?raw';
 import marker from './marker.svg?raw';
 import reload from './reload.svg?raw';
 import uzcard from './uzcard.svg?raw';
+import arrowUpRight from './arrow-up-right.svg?raw';
+import arrowDownLeft from './arrow-down-left.svg?raw';
 
 export {
   backArrow,
@@ -14,4 +16,6 @@ export {
   marker,
   reload,
   uzcard,
+  arrowUpRight,
+  arrowDownLeft,
 };

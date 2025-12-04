@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       vue(),
-      mode === 'development' && mkcert(),
+      ...(mode === 'development' ? [mkcert()] : []),
       {
         name: 'token-mw',
         configureServer(server) {
@@ -41,6 +41,9 @@ export default defineConfig(({ mode }) => {
     server: {
       open: true,
       port: 1234,
+      hmr: {
+        protocol: 'ws',
+      },
       proxy: {
         /*
         '/soliq': {

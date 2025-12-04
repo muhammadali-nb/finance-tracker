@@ -31,6 +31,7 @@
     --font-26-b: normal 600 2.6rem/1 var(--primary-font-b);
     --font-28-b: normal 600 2.8rem/1 var(--primary-font-b);
     --font-30-b: normal 600 3.0rem/1 var(--primary-font-b);
+    --font-34-b: normal 600 3.4rem/1 var(--primary-font-b);
 
 
     /* ================== other ================== */
@@ -121,7 +122,11 @@ html {
 }
 
 .font-30-b {
-    font: var(--font-28-b) !important;
+    font: var(--font-30-b) !important;
+}
+
+.font-34-b {
+    font: var(--font-34-b) !important;
 }
 
 

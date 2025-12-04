@@ -1,5 +1,5 @@
 :root {
-  --primary-50:  rgb(255, 249, 217);
+  --primary-50: rgb(255, 249, 217);
   --primary-100: rgb(255, 243, 166);
   --primary-200: rgb(255, 236, 115);
   --primary-300: rgb(255, 226, 64);
@@ -10,7 +10,7 @@
   --primary-800: rgb(153, 129, 0);
   --primary-900: rgb(102, 86, 0);
   --primary-950: rgb(64, 52, 0);
-/*  --primary-50:  rgba(240, 239, 251, 1);
+  /*  --primary-50:  rgba(240, 239, 251, 1);
   --primary-100: rgb(217, 214, 253);
   --primary-200: rgb(197, 193, 252);
   --primary-300: rgb(168, 162, 250);
@@ -22,12 +22,13 @@
   --primary-900: rgb(43, 37, 107);
   --primary-950: rgb(28, 23, 71);*/
 
-  --secondary-50:  rgb(255, 255, 255);
+  --secondary-50: rgb(255, 255, 255);
   --secondary-100: rgb(254, 254, 254);
   --secondary-200: rgb(253, 253, 253);
   --secondary-300: rgb(252, 252, 252);
   --secondary-400: rgb(251, 251, 251);
-  --secondary-500: rgb(240, 240, 240);  /* Base neutral gray */
+  --secondary-500: rgb(240, 240, 240);
+  /* Base neutral gray */
   --secondary-600: rgb(225, 225, 225);
   --secondary-700: rgb(200, 200, 200);
   --secondary-800: rgb(175, 175, 175);
@@ -41,10 +42,26 @@
   --secondary-surface-color: var(--black);
 
   --text-color: var(--black);
+  --text-color-secondary: rgb(100, 100, 100);
   --site-bg: rgb(240, 240, 240);
 }
 
 .app-dark {
   --text-color: var(--white);
   --site-bg: var(--black);
+  --text-color-secondary: rgb(150, 150, 150);
+
+  /* ================== Карточки ================== */
+  --card-default: rgb(30, 30, 30);
+  /* стандартная карточка */
+  --card-accent: rgb(34, 34, 34);
+  /* акцентная карточка */
+  --card-hover: rgb(38, 38, 38);
+  /* hover / поднятая карточка */
+
+  /* ================== Контуры / разделители ================== */
+  --border-light: rgb(46, 46, 46);
+  /* лёгкий бордер */
+  --border-medium: rgb(58, 58, 58);
+  /* более заметный бордер */
 }
