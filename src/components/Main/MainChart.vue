@@ -196,7 +196,7 @@ const chartOption = computed<EChartsOption>(() => ({
                     shadowOffsetX: 0,
                     shadowOffsetY: 5,
                     shadowColor: 'rgba(0, 0, 0, 0.6)',
-                    borderWidth: 3,
+                    borderWidth: 4,
                 },
                 scale: true,
                 scaleSize: 5,

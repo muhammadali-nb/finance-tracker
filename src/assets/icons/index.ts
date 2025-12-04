@@ -7,6 +7,10 @@ import reload from './reload.svg?raw';
 import uzcard from './uzcard.svg?raw';
 import arrowUpRight from './arrow-up-right.svg?raw';
 import arrowDownLeft from './arrow-down-left.svg?raw';
+import taxi from './taxi.svg?raw';
+import burger from './burger.svg?raw';
+import shop from './shop.svg?raw';
+import barber from './barber.svg?raw';
 
 export {
   backArrow,
@@ -18,4 +22,8 @@ export {
   uzcard,
   arrowUpRight,
   arrowDownLeft,
+  taxi,
+  burger,
+  shop,
+  barber,
 };

@@ -1,7 +1,38 @@
 <script setup lang="ts">
 import { Button } from 'primevue';
+import Transaction from '../UI/Transaction.vue';
+import { barber, burger, shop, taxi } from '@/assets/icons';
 
-
+const transactions = [
+    {
+        id: 1,
+        icon: taxi,
+        title: 'Такси',
+        amount: 1340,
+        date: '12:00',
+    },
+    {
+        id: 2,
+        icon: burger,
+        title: 'Бургер',
+        amount: 112000,
+        date: '11:00',
+    },
+    {
+        id: 3,
+        icon: shop,
+        title: 'Магазин',
+        amount: 100000,
+        date: '14:33',
+    },
+    {
+        id: 4,
+        icon: barber,
+        title: 'Барбер',
+        amount: 10200,
+        date: '15:01',
+    },
+];
 </script>
 
 <template>
@@ -9,6 +40,9 @@ import { Button } from 'primevue';
         <div class="main-transactions__header">
             <h1 class="font-20-b">Транзакции</h1>
             <Button label="Посмотреть все" text size="small" />
+        </div>
+        <div class="main-transactions__list">
+            <Transaction v-for="i in transactions" :key="i.id" :transaction="i" />
         </div>
     </div>
 
@@ -25,6 +59,13 @@ import { Button } from 'primevue';
         display: flex;
         align-items: center;
         justify-content: space-between;
+        margin: 0 0 1.2rem 0;
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: .4rem;
     }
 }
 </style>
