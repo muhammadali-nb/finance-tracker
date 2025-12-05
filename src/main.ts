@@ -1,14 +1,26 @@
+import { PieChart } from 'echarts/charts';
+import { LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components';
+import { use } from 'echarts/core';
+import { CanvasRenderer } from 'echarts/renderers';
 import { createPinia } from 'pinia';
+
 import PrimeVue from 'primevue/config';
 import ToastService from 'primevue/toastservice';
 import { createApp } from 'vue';
-
 import App from '@/App.vue';
 import { formRules } from '@/composables/Form/models';
 import { i18n } from '@/plugins/i18n';
 import { options } from '@/plugins/PrimeVue';
 import router from '@/router/router.ts';
 import '@/styles/main.scss';
+
+use([
+  CanvasRenderer,
+  PieChart,
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+]);
 
 const app = createApp(App);
 

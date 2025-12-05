@@ -21,9 +21,9 @@ export const buttonConfig = (): ButtonDesignTokens => {
       },
 
       secondary: {
-        color: 'var(--secondary-surface-color)',
-        hoverColor: 'var(--secondary-surface-color)',
-        activeColor: 'var(--secondary-surface-color)',
+        color: 'var(--text-color)',
+        hoverColor: 'var(--text-color)',
+        activeColor: 'var(--text-color)',
         background: 'var(--secondary-500)',
         hoverBackground: 'var(--secondary-600)',
         activeBackground: 'var(--secondary-700)',

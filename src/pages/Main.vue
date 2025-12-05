@@ -3,6 +3,7 @@
         <MainHeader />
         <MainBalance />
         <MainChart />
+        <MainGrid />
         <MainTransactions />
     </div>
 </template>
@@ -12,6 +13,7 @@ import MainChart from '@/components/Main/MainChart.vue';
 import MainHeader from '@/components/Main/MainHeader.vue';
 import MainBalance from '@/components/Main/MainBalance.vue';
 import MainTransactions from '@/components/Main/MainTransactions.vue';
+import MainGrid from '@/components/Main/MainGrid.vue';
 </script>
 
 <style scoped lang="scss">

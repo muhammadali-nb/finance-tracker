@@ -31,25 +31,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { onClickOutside } from '@vueuse/core';
-import { use } from 'echarts/core';
-import { CanvasRenderer } from 'echarts/renderers';
-import { PieChart } from 'echarts/charts';
-import {
-    TitleComponent,
-    TooltipComponent,
-    LegendComponent,
-} from 'echarts/components';
+
 import VChart from 'vue-echarts';
 import type { EChartsOption } from 'echarts';
-
-use([
-    CanvasRenderer,
-    PieChart,
-    TitleComponent,
-    TooltipComponent,
-    LegendComponent,
-]);
-
 const chartRef = ref<InstanceType<typeof VChart> | null>(null);
 const chartWrapperRef = ref<HTMLElement | null>(null);
 const selectedCategory = ref<string | null>(null);
