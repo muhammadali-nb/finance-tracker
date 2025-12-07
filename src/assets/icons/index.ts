@@ -14,6 +14,8 @@ import reload from './reload.svg?raw';
 import rounded from './rounded.svg?raw';
 import shop from './shop.svg?raw';
 import taxi from './taxi.svg?raw';
+import arrowLeft from './arrow-left.svg?raw';
+import plus from './plus.svg?raw';
 
 export {
   analitcs,
@@ -32,4 +34,6 @@ export {
   rounded,
   shop,
   taxi,
+  arrowLeft,
+  plus,
 };

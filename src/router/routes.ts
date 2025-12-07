@@ -19,7 +19,14 @@ const routes: RouteRecordRaw[] = [
       layout: 'Default',
     },
   },
-
+  {
+    path: '/limits',
+    name: 'limits',
+    component: () => import('@/pages/Limits.vue'),
+    meta: {
+      layout: 'Default',
+    },
+  },
   {
     path: '/status/:type',
     name: 'status',

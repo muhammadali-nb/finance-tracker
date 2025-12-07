@@ -5,6 +5,7 @@ import type { RendererElement, RendererNode, VNode } from 'vue';
 import { definePreset } from '@primeuix/styled';
 import Aura from '@primeuix/themes/aura';
 import { badgeConfig, badgePt } from '@/plugins/PrimeVue/badge';
+import { drawerConfig, drawerPt } from '@/plugins/PrimeVue/drawer';
 import { skeletonConfig } from '@/plugins/PrimeVue/skeleton';
 import { toastConfig, toastPt } from '@/plugins/PrimeVue/toast';
 import { buttonConfig, buttonPt } from './button';
@@ -140,6 +141,8 @@ const customPreset = definePreset(Aura, {
     badge: badgeConfig(),
 
     card: cardConfig(),
+
+    drawer: drawerConfig(),
 
     skeleton: {
       colorScheme: {

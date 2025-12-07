@@ -2,6 +2,37 @@
 import { analitcs, book, categories, rounded } from '@/assets/icons';
 import VIcon from '../UI/VIcon.vue';
 import { Button } from 'primevue';
+const items = [
+  {
+    id: 1,
+    title: 'Лимиты',
+    icon: rounded,
+    color: 'var(--primary-500)',
+    link: '/limits'
+  },
+  {
+    id: 2,
+    title: 'Категории',
+    icon: categories,
+    color: 'var(--p-blue-500)',
+    link: '/limits'
+  },
+  {
+    id: 3,
+    title: 'Долги',
+    icon: book,
+    color: 'var(--p-red-500)',
+    link: '/limits'
+  },
+  {
+    id: 4,
+    title: 'Аналитика',
+    icon: analitcs,
+    color: '#8b00ff',
+    link: '/limits'
+  }
+];
+
 // const items = [
 //   {
 //     id: 1,
@@ -13,54 +44,27 @@ import { Button } from 'primevue';
 //     id: 2,
 //     title: 'Категории',
 //     icon: categories,
-//     color: 'var(--p-blue-500)'
+//     color: 'var(--primary-500)'
 //   },
 //   {
 //     id: 3,
 //     title: 'Долги',
 //     icon: book,
-//     color: 'var(--p-red-500)'
+//     color: 'var(--primary-500)'
 //   },
 //   {
 //     id: 4,
 //     title: 'Аналитика',
 //     icon: analitcs,
-//     color: '#800080'
+//     color: 'var(--primary-500)'
 //   }
 // ];
-
-const items = [
-  {
-    id: 1,
-    title: 'Лимиты',
-    icon: rounded,
-    color: 'var(--primary-500)'
-  },
-  {
-    id: 2,
-    title: 'Категории',
-    icon: categories,
-    color: 'var(--primary-500)'
-  },
-  {
-    id: 3,
-    title: 'Долги',
-    icon: book,
-    color: 'var(--primary-500)'
-  },
-  {
-    id: 4,
-    title: 'Аналитика',
-    icon: analitcs,
-    color: 'var(--primary-500)'
-  }
-];
 </script>
 
 
 <template>
   <div class="main-grid">
-    <Button class="main-grid__item" v-for="i in items" :key="i.id" severity="secondary">
+    <Button class="main-grid__item" v-for="i in items" :key="i.id" as="router-link" :to="i.link" severity="secondary">
       <VIcon :icon="i.icon" class="main-grid__item-icon" :color="i.color" />
       <h1 class="font-16-r">{{ i.title }}</h1>
     </Button>
@@ -75,6 +79,7 @@ const items = [
   border-radius: 1.6rem;
   margin-top: 1.6rem;
 
+
   &__item {
     padding: 1.6rem;
     border-radius: 1.6rem;
@@ -84,6 +89,7 @@ const items = [
     justify-content: center;
     gap: 1.4rem;
     aspect-ratio: 1.5/1;
+    text-decoration: none;
   }
 
   &__item-icon {
