@@ -24,14 +24,14 @@ html:has(.face-id-page) {
   overflow: hidden;
 }
 
-.page-wrapper + .page-wrapper {
+.page-wrapper+.page-wrapper {
   position: absolute !important;
   inset: 0 !important;
 }
 
 
 ::-webkit-scrollbar-track {
-  background-color: color-mix(in srgb,var(--secondary-400),transparent 84%);
+  background-color: color-mix(in srgb, var(--secondary-400), transparent 84%);
   border-radius: var(--radius-m);
 }
 

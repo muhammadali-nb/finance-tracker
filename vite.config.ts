@@ -41,8 +41,14 @@ export default defineConfig(({ mode }) => {
     server: {
       open: true,
       port: 1234,
-      hmr: {
-        protocol: 'ws',
+      strictPort: true,
+      hmr: mode === 'development' ? {
+        protocol: 'wss',
+        host: 'localhost',
+        port: 1234,
+      } : {
+        host: 'localhost',
+        port: 1234,
       },
       proxy: {
         /*

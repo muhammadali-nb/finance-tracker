@@ -5,7 +5,7 @@ import type { RendererElement, RendererNode, VNode } from 'vue';
 import { definePreset } from '@primeuix/styled';
 import Aura from '@primeuix/themes/aura';
 import { badgeConfig, badgePt } from '@/plugins/PrimeVue/badge';
-import { drawerConfig, drawerPt } from '@/plugins/PrimeVue/drawer';
+import { drawerConfig } from '@/plugins/PrimeVue/drawer';
 import { skeletonConfig } from '@/plugins/PrimeVue/skeleton';
 import { toastConfig, toastPt } from '@/plugins/PrimeVue/toast';
 import { buttonConfig, buttonPt } from './button';
@@ -17,6 +17,7 @@ import { messageConfig } from './message';
 import { selectConfig, selectPt } from './select';
 import { selectButtonConfig } from './selectButton';
 import { toggleButtonConfig, toggleButtonPt } from './toggleButton';
+import { tieredConfig, tieredMenuPt } from './tiered';
 
 const customPreset = definePreset(Aura, {
   primitive: {
@@ -162,6 +163,7 @@ const customPreset = definePreset(Aura, {
         dark: inputNumberConfig(),
       },
     },
+    tiered: tieredConfig(),
     checkbox: checkboxConfig(),
     message: messageConfig(),
     toast: toastConfig(),
@@ -197,6 +199,7 @@ export const options: PrimeVueConfiguration = {
     },
 
     toast: toastPt(),
+    tieredmenu: tieredMenuPt(),
   },
 
   theme: {

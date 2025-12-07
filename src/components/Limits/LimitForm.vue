@@ -1,7 +1,7 @@
 <template>
     <VDrawer v-model:visible="localVisible" @update:visible="handleVisibilityChange">
         <template #header>
-            <h2 class="limit-form__title">Добавить лимит</h2>
+            <h2 class="limit-form__title">{{ isEditMode ? 'Редактировать лимит' : 'Добавить лимит' }}</h2>
         </template>
 
         <VForm @submit-form="handleSubmit" class="limit-form__form-wrapper">
@@ -34,7 +34,8 @@
             </div>
 
             <div class="limit-form__footer">
-                <Button label="Сохранить лимит" type="submit" fluid severity="primary" class="limit-form__submit" />
+                <Button :label="isEditMode ? 'Сохранить изменения' : 'Сохранить лимит'" type="submit" fluid
+                    severity="primary" class="limit-form__submit" />
             </div>
         </VForm>
     </VDrawer>
@@ -63,6 +64,7 @@ const props = withDefaults(
     defineProps<{
         visible: boolean;
         categories?: Category[];
+        editData?: LimitFormData | null;
     }>(),
     {
         categories: () => [
@@ -73,6 +75,7 @@ const props = withDefaults(
             { name: 'Услуги', value: 'services' },
             { name: 'Прочее', value: 'other' },
         ],
+        editData: null,
     }
 );
 
@@ -83,8 +86,27 @@ const emit = defineEmits<{
 
 const localVisible = ref(props.visible);
 
+const isEditMode = computed(() => !!props.editData);
+
 watch(() => props.visible, (newValue) => {
     localVisible.value = newValue;
+    if (newValue && props.editData) {
+        formData.value = {
+            category: props.editData.category,
+            budget: props.editData.budget,
+        };
+    } else if (!newValue) {
+        resetForm();
+    }
+});
+
+watch(() => props.editData, (newData) => {
+    if (newData && localVisible.value) {
+        formData.value = {
+            category: newData.category,
+            budget: newData.budget,
+        };
+    }
 });
 
 const handleVisibilityChange = (value: boolean) => {

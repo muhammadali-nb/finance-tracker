@@ -16,6 +16,7 @@ import shop from './shop.svg?raw';
 import taxi from './taxi.svg?raw';
 import arrowLeft from './arrow-left.svg?raw';
 import plus from './plus.svg?raw';
+import menuDots from './menu-dots.svg?raw';
 
 export {
   analitcs,
@@ -36,4 +37,5 @@ export {
   taxi,
   arrowLeft,
   plus,
+  menuDots,
 };

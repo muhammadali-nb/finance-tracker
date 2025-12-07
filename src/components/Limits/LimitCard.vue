@@ -1,0 +1,148 @@
+<template>
+    <div class="limit-card">
+        <div class="limit-card__header">
+            <div class="limit-card__category">
+                <h3 class="limit-card__category-name">{{ categoryName }}</h3>
+            </div>
+            <div class="limit-card__menu-wrapper">
+                <Button @click="toggleMenu" :icon="menuDots" text class="limit-card__menu-button" />
+                <TieredMenu ref="menu" :model="menuItems" popup />
+            </div>
+        </div>
+
+        <div class="limit-card__progress">
+            <ProgressBar :value="progressPercentage" />
+        </div>
+
+        <div class="limit-card__content">
+            <div class="limit-card__budget">
+                <span class="limit-card__budget-value">{{ formattedBudget }}</span>
+                <span class="limit-card__budget-currency">UZS</span>
+            </div>
+            <p class="limit-card__period">{{ period }}</p>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+import { Button, ProgressBar, TieredMenu } from 'primevue';
+import type { MenuItem } from 'primevue/menuitem';
+import type { Limit } from '@/composables/Limits/useLimits';
+import { menuDots } from '@/assets/icons';
+
+const props = defineProps<{
+    limit: Limit;
+}>();
+
+const emit = defineEmits<{
+    (e: 'remove'): void;
+    (e: 'edit'): void;
+}>();
+
+const menu = ref();
+
+const toggleMenu = (event: Event) => {
+    menu.value.toggle(event);
+};
+
+const menuItems = computed<MenuItem[]>(() => [
+    {
+        label: 'Редактировать',
+        command: () => {
+            emit('edit');
+        },
+    },
+    {
+        label: 'Удалить',
+        command: () => {
+            emit('remove');
+        },
+    },
+]);
+
+const categoryName = computed(() => {
+    return props.limit.category || 'Не выбрано';
+});
+
+const formattedBudget = computed(() => {
+    return props.limit.budget.toLocaleString('ru-RU');
+});
+
+const period = computed(() => {
+    return `${props.limit.month} ${props.limit.year} г.`;
+});
+
+const progressPercentage = computed(() => {
+    let hash = 0;
+    for (let i = 0; i < props.limit.id.length; i++) {
+        const char = props.limit.id.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    const random = Math.abs(hash) % 101;
+    return random;
+});
+</script>
+
+<style scoped lang="scss">
+.limit-card {
+    background-color: var(--card-default);
+    border-radius: var(--radius-l);
+    padding: 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    &__category-name {
+        font: var(--font-16-b);
+        margin: 0;
+        color: var(--text-color);
+    }
+
+    &__progress {
+        width: 100%;
+        margin-top: 0.4rem;
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    &__budget {
+        display: flex;
+        align-items: baseline;
+        gap: 0.4rem;
+    }
+
+    &__budget-value {
+        font: var(--font-20-b);
+        color: var(--text-color);
+    }
+
+    &__budget-currency {
+        font: var(--font-14-r);
+        color: var(--text-color-secondary);
+    }
+
+    &__period {
+        font: var(--font-12-r);
+        color: var(--text-color-secondary);
+        margin: 0;
+    }
+
+    &__menu-button {
+        width: 2.4rem;
+        height: 2.4rem;
+        // padding: .4rem;
+    }
+}
+</style>

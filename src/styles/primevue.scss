@@ -6,6 +6,7 @@ body {
   .confirmation-dialog {
     max-width: 36rem;
     width: 100%;
+
     .p-dialog-content {
       padding: 0;
     }
@@ -13,20 +14,24 @@ body {
 
   .p-button-icon-svg {
     font-size: 0 !important;
+
     svg {
       width: auto;
       max-width: 100%;
       max-height: 100%;
       transition: var(--transition-fast);
+
       &[fill]:not([fill='none']) {
         fill: currentColor;
       }
     }
+
     &:not(.no-fill) {
       svg {
         [fill]:not([fill='none']) {
           fill: currentColor;
         }
+
         [stroke]:not([stroke='none']) {
           stroke: currentColor;
         }
@@ -49,12 +54,15 @@ body {
     --p-select-lg-font-size: 3rem;
     --p-icon-size: 2.5rem;
     --p-select-sm-font-size: 1.5rem;
+
     &.p-select-sm {
       --p-select-dropdown-width: 3.6rem;
     }
+
     &.p-select-lg {
       --p-select-dropdown-width: 6rem;
     }
+
     .p-select-dropdown {
       margin: -1px -1px -1px 0;
       background: var(--primary-500);
