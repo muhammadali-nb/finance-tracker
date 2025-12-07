@@ -6,6 +6,7 @@ export const drawerConfig = (): DrawerDesignTokens => {
     return {
         root: {
             background: 'var(--card-accent)',
+            borderColor: 'transparent',
         }
     };
 };

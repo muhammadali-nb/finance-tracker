@@ -1,14 +1,10 @@
 <template>
-    <Drawer v-model:visible="localVisible" position="bottom" style="height: 66%;" class="limit-form" :modal="true"
-        :dismissable="true" @update:visible="handleVisibilityChange">
+    <VDrawer v-model:visible="localVisible" @update:visible="handleVisibilityChange">
         <template #header>
-            <div class="limit-form__header">
-                <h2 class="limit-form__title">Добавить лимит</h2>
-            </div>
+            <h2 class="limit-form__title">Добавить лимит</h2>
         </template>
 
-
-        <VForm @submit-form="handleSubmit" class="limit-form__content">
+        <VForm @submit-form="handleSubmit" class="limit-form__form-wrapper">
             <div class="limit-form__form">
                 <div class="limit-form__form-section">
                     <VSelect v-model="formData.category" :options="categories" option-label="name" option-value="name"
@@ -41,12 +37,13 @@
                 <Button label="Сохранить лимит" type="submit" fluid severity="primary" class="limit-form__submit" />
             </div>
         </VForm>
-    </Drawer>
+    </VDrawer>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Button, Drawer } from 'primevue';
+import { Button } from 'primevue';
+import VDrawer from '@/components/UI/VDrawer.vue';
 import VForm from '@/components/Form/VForm.vue';
 import VInputNumber from '@/components/Form/VInputNumber.vue';
 import VSelect from '@/components/Form/VSelect.vue';
@@ -144,37 +141,15 @@ const handleSubmit = () => {
 
 <style scoped lang="scss">
 .limit-form {
-    :deep(.p-drawer) {
-        z-index: 5;
+    &__form-wrapper {
+        display: flex;
+        flex-direction: column;
         height: 100%;
-    }
-
-    :deep(.p-drawer-header) {
-        padding: 2rem 2.4rem 1rem;
-    }
-
-    // :deep(.p-drawer-body) {
-    //     padding: 0 2.4rem;
-    //     display: flex;
-    //     flex-direction: column;
-    //     height: calc(70vh - 8rem);
-    // }
-
-    &__header {
-        padding: 0;
     }
 
     &__title {
         font: var(--font-20-b);
         margin: 0;
-    }
-
-    &__content {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        overflow-y: auto;
-        padding: 2rem 0 0 0;
     }
 
     &__form {
