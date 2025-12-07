@@ -156,6 +156,7 @@ const handleSubmit = () => {
         display: flex;
         flex-direction: column;
         gap: 1.2rem;
+        padding-bottom: 1.6rem;
     }
 
     &__form-section {

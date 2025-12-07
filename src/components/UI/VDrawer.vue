@@ -1,6 +1,6 @@
 <template>
     <Drawer v-model:visible="localVisible" position="bottom" class="v-drawer"
-        style="height: 66%; border-radius: var(--radius-l) var(--radius-l) 0 0;" :modal="true" :dismissable="true"
+        style="height: auto; border-radius: var(--radius-l) var(--radius-l) 0 0;" :modal="true" :dismissable="true"
         @update:visible="handleVisibilityChange">
         <template #header>
             <slot name="header" />
