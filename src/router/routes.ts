@@ -28,6 +28,14 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/categories',
+    name: 'categories',
+    component: () => import('@/pages/Categories.vue'),
+    meta: {
+      layout: 'Default',
+    },
+  },
+  {
     path: '/status/:type',
     name: 'status',
     component: () => import('@/pages/StatusPage.vue'),

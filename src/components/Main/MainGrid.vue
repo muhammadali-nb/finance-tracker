@@ -15,7 +15,7 @@ const items = [
     title: 'Категории',
     icon: categories,
     color: 'var(--p-blue-500)',
-    link: '/limits'
+    link: '/categories'
   },
   {
     id: 3,
@@ -32,8 +32,6 @@ const items = [
     link: '/limits'
   }
 ];
-
-// const items = [
 //   {
 //     id: 1,
 //     title: 'Лимиты',
@@ -95,6 +93,11 @@ const items = [
   &__item-icon {
     width: 3rem;
     height: 3rem;
+
+    :deep(svg) {
+      width: 100%;
+      height: 100%;
+    }
   }
 }
 </style>
