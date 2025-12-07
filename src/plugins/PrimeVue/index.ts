@@ -17,7 +17,7 @@ import { messageConfig } from './message';
 import { selectConfig, selectPt } from './select';
 import { selectButtonConfig } from './selectButton';
 import { toggleButtonConfig, toggleButtonPt } from './toggleButton';
-import { tieredConfig, tieredMenuPt } from './tiered';
+import { tieredMenuConfig, tieredMenuPt } from './tiered';
 
 const customPreset = definePreset(Aura, {
   primitive: {
@@ -163,7 +163,7 @@ const customPreset = definePreset(Aura, {
         dark: inputNumberConfig(),
       },
     },
-    tiered: tieredConfig(),
+    tieredmenu: tieredMenuConfig(),
     checkbox: checkboxConfig(),
     message: messageConfig(),
     toast: toastConfig(),
