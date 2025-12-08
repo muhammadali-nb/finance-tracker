@@ -26,7 +26,7 @@ import { computed, ref } from 'vue';
 import { Button, TieredMenu } from 'primevue';
 import type { MenuItem } from 'primevue/menuitem';
 import type { Category, CategoryType } from '@/composables/Categories/useCategories';
-import { menuDots, arrowUpRight, arrowDownLeft, book, categories as defaultIcon } from '@/assets/icons';
+import { menuDots, arrowUpRight, arrowDownLeft, book, categories as defaultIcon, dollar } from '@/assets/icons';
 import VIcon from '@/components/UI/VIcon.vue';
 
 const props = defineProps<{
@@ -57,7 +57,7 @@ const typeLabel = computed(() => {
 const typeIcons: Record<CategoryType, string> = {
     income: arrowDownLeft,
     expense: arrowUpRight,
-    debt: book,
+    debt: dollar,
 };
 
 const categoryIcon = computed(() => {

@@ -17,7 +17,7 @@ import taxi from './taxi.svg?raw';
 import arrowLeft from './arrow-left.svg?raw';
 import plus from './plus.svg?raw';
 import menuDots from './menu-dots.svg?raw';
-
+import dollar from './dollar.svg?raw';
 export {
   analitcs,
   arrowDownLeft,
@@ -38,4 +38,5 @@ export {
   arrowLeft,
   plus,
   menuDots,
+  dollar,
 };

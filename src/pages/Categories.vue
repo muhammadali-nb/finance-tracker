@@ -15,7 +15,7 @@
         <div class="categories-page__content">
             <div v-if="filteredCategories.length === 0" class="categories-page__empty">
                 <p class="categories-page__empty-text">
-                    {{ selectedType ? 'Нет категорий этого типа' : 'Нет добавленных категорий' }}
+                    {{ selectedType !== 'all' ? 'Нет категорий этого типа' : 'Нет добавленных категорий' }}
                 </p>
             </div>
             <div v-else class="categories-page__list">
@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { arrowLeft, plus, arrowUpRight, arrowDownLeft, book } from '@/assets/icons';
+import { arrowLeft, plus, arrowUpRight, arrowDownLeft, dollar } from '@/assets/icons';
 import router from '@/router/router';
 import { Button, SelectButton } from 'primevue';
 import CategoryForm from '@/components/Categories/CategoryForm.vue';
@@ -45,19 +45,20 @@ import { useToastStore } from '@/store/toastsStore';
 
 const drawerVisible = ref(false);
 const editingCategory = ref<(CategoryFormData & { isDefault?: boolean; id?: string }) | null>(null);
-const selectedType = ref<CategoryType | null>(null);
+const selectedType = ref<CategoryType | 'all'>('all');
 const { categories, addCategory, removeCategory: removeCategoryAction, updateCategory, toggleCategoryVisibility, getCategoriesByType } = useCategories();
 const $toast = useToastStore();
 
 const filterOptions = [
-    { label: 'Все', value: null },
+    { label: 'Все', value: 'all' as const },
     { label: 'Доходы', value: 'income' as CategoryType },
     { label: 'Расходы', value: 'expense' as CategoryType },
     { label: 'Долги', value: 'debt' as CategoryType },
 ];
 
 const filteredCategories = computed(() => {
-    return getCategoriesByType(selectedType.value);
+    const type = selectedType.value === 'all' ? null : selectedType.value;
+    return getCategoriesByType(type);
 });
 
 watch(drawerVisible, (value) => {
@@ -85,7 +86,7 @@ const getCategoryIcon = (type: CategoryType) => {
         case 'expense':
             return arrowDownLeft;
         case 'debt':
-            return book;
+            return dollar;
         default:
             return arrowDownLeft;
     }
