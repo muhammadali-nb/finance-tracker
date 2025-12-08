@@ -56,35 +56,35 @@
 
 
 
-.route-transition-enter-active,
-.route-transition-leave-active {
-  transition: var(--page-transition-time);
-}
+// .route-transition-enter-active,
+// .route-transition-leave-active {
+//   transition: var(--page-transition-time);
+// }
 
-.route-transition-enter-from {
-  transform: translateX(100%);
-}
+// .route-transition-enter-from {
+//   transform: translateX(100%);
+// }
 
-.route-transition-leave-to {
-  transform: translateX(-100%);
-  position: absolute !important;
-  inset: 0;
-}
+// .route-transition-leave-to {
+//   transform: translateX(-100%);
+//   position: absolute !important;
+//   inset: 0;
+// }
 
-.route-back-transition-enter-active,
-.route-back-transition-leave-active {
-  transition: var(--page-transition-time);
-}
+// .route-back-transition-enter-active,
+// .route-back-transition-leave-active {
+//   transition: var(--page-transition-time);
+// }
 
-.route-back-transition-enter-from {
-  transform: translateX(-100%);
-}
+// .route-back-transition-enter-from {
+//   transform: translateX(-100%);
+// }
 
-.route-back-transition-leave-to {
-  transform: translateX(100%);
-  position: absolute !important;
-  inset: 0;
-}
+// .route-back-transition-leave-to {
+//   transform: translateX(100%);
+//   position: absolute !important;
+//   inset: 0;
+// }
 
 .scale-fade-enter-active,
 .scale-fade-leave-active {

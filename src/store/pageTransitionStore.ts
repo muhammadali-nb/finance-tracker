@@ -1,10 +1,10 @@
-import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
+// import { defineStore } from 'pinia';
+// import { computed, ref } from 'vue';
 
-export const usePageTransitionStore = defineStore('page-transition', () => {
-  const isBack = ref(false);
+// export const usePageTransitionStore = defineStore('page-transition', () => {
+//   const isBack = ref(false);
 
-  const transitionName = computed(() => isBack.value ? 'route-back-transition' : 'route-transition');
+//   const transitionName = computed(() => isBack.value ? 'route-back-transition' : 'route-transition');
 
-  return { isBack, transitionName };
-});
+//   return { isBack, transitionName };
+// });
