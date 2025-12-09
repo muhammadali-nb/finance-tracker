@@ -9,7 +9,7 @@ defineProps<{
 </script>
 
 <template>
-    <Button fluid class="transaction-button" severity="secondary" text>
+    <Button fluid class="transaction-button" text>
         <div class="transaction-button__content">
             <div class="transaction-button__content__icon">
                 <VIcon :icon="transaction.icon" />
@@ -28,7 +28,8 @@ defineProps<{
 .transaction-button {
     display: flex;
     border-radius: 1.6rem;
-    border: 1px solid var(--border-light);
+    // border: 1px solid var(--gold-border);
+    // box-shadow: var(--gold-shadow);
     width: 100%;
     color: var(--text-color) !important;
     padding: .6rem 1rem .6rem .2rem;
