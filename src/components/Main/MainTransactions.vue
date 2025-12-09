@@ -72,7 +72,7 @@ const transactions = [
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin: 0 0 1.2rem 0;
+        margin: 0 0 2rem 0;
         position: relative;
         z-index: 1;
     }

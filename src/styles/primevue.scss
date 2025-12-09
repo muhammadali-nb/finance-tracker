@@ -12,6 +12,49 @@ body {
     }
   }
 
+  /* Утилитарные классы для премиальных кнопок */
+  .p-button.button-premium-text {
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 215, 0, 0.05) !important;
+      transform: none;
+    }
+
+    &:active {
+      background: rgba(255, 215, 0, 0.08) !important;
+      transform: scale(0.98);
+    }
+  }
+
+  .p-button.button-premium-primary {
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: none;
+      opacity: 0.9;
+    }
+
+    &:active {
+      transform: scale(0.98);
+      opacity: 0.85;
+    }
+  }
+
+  .p-button.button-premium-secondary {
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--card-hover) !important;
+      transform: none;
+    }
+
+    &:active {
+      background: var(--card-accent) !important;
+      transform: scale(0.98);
+    }
+  }
+
   .p-button-icon-svg {
     font-size: 0 !important;
 
