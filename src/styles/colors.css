@@ -1,15 +1,17 @@
 :root {
-	--primary-50: rgb(255, 249, 217);
-	--primary-100: rgb(255, 243, 166);
-	--primary-200: rgb(255, 236, 115);
-	--primary-300: rgb(255, 226, 64);
-	--primary-400: rgb(255, 221, 32);
-	--primary-500: rgb(255, 217, 0);
+	/* Золотые цвета как у монеты */
+	--primary-50: rgb(255, 248, 220);
+	--primary-100: rgb(255, 240, 180);
+	--primary-200: rgb(255, 230, 140);
+	--primary-300: rgb(255, 220, 100);
+	--primary-400: rgb(255, 210, 60);
+	--primary-500: rgb(255, 215, 0);
+	/* Gold #FFD700 - основной золотой */
 	--primary-600: rgb(230, 195, 0);
-	--primary-700: rgb(191, 162, 0);
-	--primary-800: rgb(153, 129, 0);
-	--primary-900: rgb(102, 86, 0);
-	--primary-950: rgb(64, 52, 0);
+	--primary-700: rgb(200, 170, 0);
+	--primary-800: rgb(170, 145, 0);
+	--primary-900: rgb(140, 120, 0);
+	--primary-950: rgb(100, 85, 0);
 	/*  --primary-50:  rgba(240, 239, 251, 1);
   --primary-100: rgb(217, 214, 253);
   --primary-200: rgb(197, 193, 252);
@@ -35,7 +37,7 @@
 	--secondary-900: rgb(150, 150, 150);
 	--secondary-950: rgb(125, 125, 125);
 
-	--black: rgb(30, 30, 30);
+	--black: #080A0B;
 	--white: rgb(255, 255, 255);
 
 	--primary-surface-color: var(--black);
@@ -44,6 +46,25 @@
 	--text-color: var(--black);
 	--text-color-secondary: rgb(100, 100, 100);
 	--site-bg: rgb(240, 240, 240);
+
+	/* Золотые эффекты для монеты - сдержанные */
+	--gold-gradient: linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(255, 165, 0, 0.6) 50%, rgba(255, 215, 0, 0.8) 100%);
+	--gold-gradient-text: linear-gradient(135deg, rgba(255, 215, 0, 0.9) 0%, rgba(255, 180, 0, 0.7) 30%, rgba(255, 215, 0, 0.9) 60%, rgba(255, 180, 0, 0.7) 100%);
+	--gold-shadow: 0 2px 8px rgba(255, 215, 0, 0.12);
+	--gold-shadow-hover: 0 4px 12px rgba(255, 215, 0, 0.18);
+	--gold-border: rgba(255, 215, 0, 0.15);
+	--gold-border-hover: rgba(255, 215, 0, 0.25);
+	--gold-card-bg: linear-gradient(135deg, rgba(255, 215, 0, 0.04) 0%, var(--card-default) 60%);
+	--gold-card-radial: radial-gradient(circle at top right, rgba(255, 215, 0, 0.06) 0%, transparent 70%);
+}
+
+/* Утилитарный класс для золотого текста с эффектом блеска */
+.gold-text {
+	background: var(--gold-gradient-text);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+	filter: drop-shadow(0 1px 2px rgba(255, 215, 0, 0.15));
 }
 
 .app-dark {
@@ -56,7 +77,8 @@
 	--secondary-200: rgb(200, 200, 200);
 	--secondary-300: rgb(160, 160, 160);
 	--secondary-400: rgb(100, 100, 100);
-	--secondary-500: rgb(30, 30, 30); /* твой базовый цвет */
+	--secondary-500: rgb(30, 30, 30);
+	/* твой базовый цвет */
 	--secondary-600: rgb(25, 25, 25);
 	--secondary-700: rgb(20, 20, 20);
 	--secondary-800: rgb(15, 15, 15);
@@ -64,11 +86,11 @@
 	--secondary-950: rgb(5, 5, 5);
 
 	/* ================== Карточки ================== */
-	--card-default: rgb(30, 30, 30);
+	--card-default: #2B2B2B;
 	/* стандартная карточка */
-	--card-accent: rgb(34, 34, 34);
+	--card-accent: #343434;
 	/* акцентная карточка */
-	--card-hover: rgb(38, 38, 38);
+	--card-hover: #3C3C3C;
 	/* hover / поднятая карточка */
 
 	/* ================== Контуры / разделители ================== */

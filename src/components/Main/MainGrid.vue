@@ -62,9 +62,9 @@ const items = [
 
 <template>
   <div class="main-grid">
-    <Button class="main-grid__item" v-for="i in items" :key="i.id" as="router-link" :to="i.link" severity="secondary">
-      <VIcon :icon="i.icon" class="main-grid__item-icon" :color="i.color" />
-      <h1 class="font-16-r">{{ i.title }}</h1>
+    <Button class="main-grid__item" v-for="i in items" :key="i.id" as="router-link" text :to="i.link">
+      <VIcon :icon="i.icon" class="main-grid__item-icon" />
+      <h1 class="font-16-r gold-text">{{ i.title }}</h1>
     </Button>
   </div>
 </template>
@@ -88,11 +88,40 @@ const items = [
     gap: 1.4rem;
     aspect-ratio: 1.5/1;
     text-decoration: none;
+    background: var(--gold-card-bg);
+    border: 1px solid var(--gold-border);
+    box-shadow: var(--gold-shadow);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 1.6rem;
+      background: var(--gold-card-radial);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover {
+      border-color: var(--gold-border-hover);
+      box-shadow: var(--gold-shadow-hover);
+      transform: translateY(-2px);
+
+      &::before {
+        opacity: 1;
+      }
+    }
   }
 
   &__item-icon {
     width: 3rem;
     height: 3rem;
+    // color: var(--primary-500);
+    // filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.3));
 
     :deep(svg) {
       width: 100%;

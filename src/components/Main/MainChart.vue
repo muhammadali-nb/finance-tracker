@@ -1,18 +1,18 @@
 <template>
     <div class="main-chart">
         <div class="main-chart__header">
-            <h1 class="font-20-b">Категории</h1>
+            <h1 class="font-20-b gold-text">Категории</h1>
         </div>
         <div ref="chartWrapperRef" class="main-chart__container-wrapper">
             <VChart ref="chartRef" :option="chartOption" class="main-chart__container" @click="handleChartClick" />
             <Transition name="fade">
                 <div v-if="selectedCategory" class="main-chart__center">
                     <p class="main-chart__center-label font-14-r">{{ centerLabel }}</p>
-                    <h2 class="main-chart__center-value font-30-b">{{ formattedCenterValue }}</h2>
+                    <h2 class="main-chart__center-value font-30-b gold-text">{{ formattedCenterValue }}</h2>
                 </div>
                 <div v-else class="main-chart__center">
                     <p class="main-chart__center-label font-14-r">Текущий баланс</p>
-                    <h2 class="main-chart__center-value font-30-b">{{ formattedBalance }}</h2>
+                    <h2 class="main-chart__center-value font-30-b gold-text">{{ formattedBalance }}</h2>
                 </div>
             </Transition>
         </div>
@@ -208,6 +208,19 @@ const chartOption = computed<EChartsOption>(() => ({
     padding: 1.6rem 1.2rem;
     border-radius: 1.6rem;
     background-color: var(--card-default);
+    border: 1px solid var(--gold-border);
+    box-shadow: var(--gold-shadow);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 1.6rem;
+        background: var(--gold-card-radial);
+        pointer-events: none;
+    }
 
     &__header {
         display: flex;
