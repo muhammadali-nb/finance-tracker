@@ -90,8 +90,7 @@
                     <h2 class="font-18-b gold-text">Расходы по категориям</h2>
                 </div>
                 <div ref="pieChartWrapperRef" class="analytics-page__chart-wrapper pie">
-                    <VChart ref="pieChartRef" :option="pieChartOption" class="analytics-page__chart"
-                        @click="handlePieChartClick" />
+                    <VChart ref="pieChartRef" :option="pieChartOption" class="analytics-page__chart" />
                     <Transition name="fade">
                         <div v-if="selectedCategory" class="analytics-page__chart-center">
                             <p class="analytics-page__chart-center-label font-14-r">{{ selectedCategory }}</p>
