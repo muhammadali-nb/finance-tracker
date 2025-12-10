@@ -26,7 +26,7 @@ import { computed, ref } from 'vue';
 import { Button, TieredMenu } from 'primevue';
 import type { MenuItem } from 'primevue/menuitem';
 import type { Category, CategoryType } from '@/composables/Categories/useCategories';
-import { menuDots, arrowUpRight, arrowDownLeft, book, categories as defaultIcon, dollar } from '@/assets/icons';
+import { menuDots, arrowUpRight, arrowDownLeft, categories as defaultIcon, dollar } from '@/assets/icons';
 import VIcon from '@/components/UI/VIcon.vue';
 
 const props = defineProps<{
@@ -91,20 +91,46 @@ const menuItems = computed<MenuItem[]>(() => [
 
 <style scoped lang="scss">
 .category-card {
-    background-color: var(--card-default);
+    background: var(--gold-card-bg);
     border-radius: var(--radius-l);
     padding: 1.6rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1.2rem;
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--gold-border);
+    box-shadow: var(--gold-shadow);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: var(--radius-l);
+        background: var(--gold-card-radial);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    &:hover {
+        border-color: var(--gold-border-hover);
+        box-shadow: var(--gold-shadow-hover);
+
+        &::before {
+            opacity: 1;
+        }
+    }
 
     &__content {
         display: flex;
         align-items: center;
         gap: 1.2rem;
         flex: 1;
+        position: relative;
+        z-index: 1;
     }
 
     &__icon {
@@ -113,10 +139,14 @@ const menuItems = computed<MenuItem[]>(() => [
         display: flex;
         justify-content: center;
         align-items: center;
-        border-radius: 50%;
-        background-color: rgba(255, 217, 0, 0.1);
-        color: var(--primary-500);
+        border-radius: 1.2rem;
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.15) 100%);
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+        color: var(--primary-600);
         flex-shrink: 0;
+        position: relative;
+        z-index: 1;
     }
 
     &__info {
@@ -161,6 +191,7 @@ const menuItems = computed<MenuItem[]>(() => [
     &__menu-wrapper {
         position: relative;
         flex-shrink: 0;
+        z-index: 1;
     }
 
     &__menu-button {

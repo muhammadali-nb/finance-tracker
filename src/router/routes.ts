@@ -36,6 +36,22 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/debts',
+    name: 'debts',
+    component: () => import('@/pages/Debts.vue'),
+    meta: {
+      layout: 'Default',
+    },
+  },
+  {
+    path: '/analytics',
+    name: 'analytics',
+    component: () => import('@/pages/Analytics.vue'),
+    meta: {
+      layout: 'Default',
+    },
+  },
+  {
     path: '/status/:type',
     name: 'status',
     component: () => import('@/pages/StatusPage.vue'),

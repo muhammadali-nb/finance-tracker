@@ -22,14 +22,14 @@ const items = [
     title: 'Долги',
     icon: book,
     color: 'var(--p-red-500)',
-    link: '/limits'
+    link: '/debts'
   },
   {
     id: 4,
     title: 'Аналитика',
     icon: analitcs,
     color: '#8b00ff',
-    link: '/limits'
+    link: '/analytics'
   }
 ];
 //   {

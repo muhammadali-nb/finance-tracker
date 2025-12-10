@@ -3,7 +3,7 @@
         <div class="categories-page__header">
             <Button :icon="arrowLeft" severity="secondary" @click="router.back()"
                 class="categories-page__header-button" />
-            <h1>Категории</h1>
+            <h1 class="gold-text">Категории</h1>
             <div class="categories-page__header-empty" />
         </div>
 
@@ -14,8 +14,14 @@
 
         <div class="categories-page__content">
             <div v-if="filteredCategories.length === 0" class="categories-page__empty">
+                <div class="categories-page__empty-icon">
+                    <VIcon :icon="warning" />
+                </div>
                 <p class="categories-page__empty-text">
                     {{ selectedType !== 'all' ? 'Нет категорий этого типа' : 'Нет добавленных категорий' }}
+                </p>
+                <p class="categories-page__empty-hint">
+                    {{ selectedType !== 'all' ? 'Попробуйте выбрать другой тип' : 'Добавьте первую категорию' }}
                 </p>
             </div>
             <div v-else class="categories-page__list">
@@ -34,11 +40,12 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { arrowLeft, plus, arrowUpRight, arrowDownLeft, dollar } from '@/assets/icons';
+import { arrowLeft, plus, arrowUpRight, arrowDownLeft, dollar, warning } from '@/assets/icons';
 import router from '@/router/router';
 import { Button, SelectButton } from 'primevue';
 import CategoryForm from '@/components/Categories/CategoryForm.vue';
 import CategoryCard from '@/components/Categories/CategoryCard.vue';
+import VIcon from '@/components/UI/VIcon.vue';
 import type { Category, CategoryType, CategoryFormData } from '@/composables/Categories/useCategories';
 import { useCategories } from '@/composables/Categories/useCategories';
 import { useToastStore } from '@/store/toastsStore';
@@ -168,15 +175,51 @@ const handleSubmit = (data: CategoryFormData) => {
 
     &__empty {
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         padding: 4rem 2rem;
-    }
+        background: var(--gold-card-bg);
+        border-radius: 1.6rem;
+        border: 1px solid var(--gold-border);
+        box-shadow: var(--gold-shadow);
+        position: relative;
+        overflow: hidden;
 
-    &__empty-text {
-        font: var(--font-14-r);
-        color: var(--text-color-secondary);
-        margin: 0;
+        &::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 1.6rem;
+            background: var(--gold-card-radial);
+            pointer-events: none;
+        }
+
+        &-icon {
+            width: 6.4rem;
+            height: 6.4rem;
+            color: var(--primary-500);
+            margin-bottom: 1.6rem;
+            position: relative;
+            z-index: 1;
+            opacity: 0.5;
+        }
+
+        &-text {
+            font: var(--font-18-b);
+            color: var(--text-color);
+            margin: 0 0 0.4rem 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        &-hint {
+            font: var(--font-14-r);
+            color: var(--text-color-secondary);
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
     }
 
     &__list {

@@ -18,6 +18,7 @@ import arrowLeft from './arrow-left.svg?raw';
 import plus from './plus.svg?raw';
 import menuDots from './menu-dots.svg?raw';
 import dollar from './dollar.svg?raw';
+import warning from './warning.svg?raw';
 export {
   analitcs,
   arrowDownLeft,
@@ -39,4 +40,5 @@ export {
   plus,
   menuDots,
   dollar,
+  warning,
 };

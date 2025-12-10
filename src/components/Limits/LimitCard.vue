@@ -87,23 +87,52 @@ const progressPercentage = computed(() => {
 
 <style scoped lang="scss">
 .limit-card {
-    background-color: var(--card-default);
+    background: var(--gold-card-bg);
     border-radius: var(--radius-l);
     padding: 1.6rem;
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
+    border: 1px solid var(--gold-border);
+    box-shadow: var(--gold-shadow);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: var(--radius-l);
+        background: var(--gold-card-radial);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    &:hover {
+        border-color: var(--gold-border-hover);
+        box-shadow: var(--gold-shadow-hover);
+
+        &::before {
+            opacity: 1;
+        }
+    }
 
     &__header {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        position: relative;
+        z-index: 1;
     }
 
     &__category-name {
         font: var(--font-16-b);
         margin: 0;
         color: var(--text-color);
+        position: relative;
+        z-index: 1;
     }
 
     &__progress {
@@ -115,6 +144,8 @@ const progressPercentage = computed(() => {
         display: flex;
         flex-direction: column;
         gap: 0.4rem;
+        position: relative;
+        z-index: 1;
     }
 
     &__budget {
@@ -126,6 +157,8 @@ const progressPercentage = computed(() => {
     &__budget-value {
         font: var(--font-20-b);
         color: var(--text-color);
+        position: relative;
+        z-index: 1;
     }
 
     &__budget-currency {
@@ -139,10 +172,14 @@ const progressPercentage = computed(() => {
         margin: 0;
     }
 
+    &__menu-wrapper {
+        position: relative;
+        z-index: 1;
+    }
+
     &__menu-button {
         width: 2.4rem;
         height: 2.4rem;
-        // padding: .4rem;
     }
 }
 </style>
