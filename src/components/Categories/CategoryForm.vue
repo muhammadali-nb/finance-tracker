@@ -70,9 +70,9 @@ const isEditMode = computed(() => !!props.editData);
 const isDefaultCategory = computed(() => props.editData?.isDefault || false);
 
 const typeOptions = [
-    { label: 'Доходы', value: 'income' as CategoryType },
-    { label: 'Расходы', value: 'expense' as CategoryType },
-    { label: 'Долги', value: 'debt' as CategoryType },
+    { label: 'Доходы', value: 'income' },
+    { label: 'Расходы', value: 'expense' },
+    { label: 'Долги', value: 'debt' },
 ];
 
 watch(() => props.visible, (newValue) => {
