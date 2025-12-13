@@ -101,28 +101,21 @@ const handleTextInput = () => {
 
     &__button {
         --p-button-padding-y: 1rem;
+        font: var(--font-14-b);
+
+        @include media-max($small) {
+            font: var(--font-12-b) !important;
+        }
     }
 
     &__field {
         flex: 1;
         min-width: 0;
-
-        :deep(.p-inputtext) {
-            border-color: var(--gold-border);
-            font: var(--font-14-r);
-            padding: 1rem 1.2rem;
-            border-radius: 0.8rem;
-            transition: all 0.3s ease;
-
-            &:focus {
-                border-color: var(--gold-border-hover);
-                box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1);
-            }
-
-            &::placeholder {
-                color: var(--text-color-secondary);
-            }
-        }
+        padding: 1.2rem 1.6rem;
+        border-color: var(--gold-border);
+        font: var(--font-14-r);
+        border-radius: 0.8rem;
+        transition: all 0.3s ease;
     }
 }
 </style>
