@@ -19,6 +19,8 @@ import plus from './plus.svg?raw';
 import menuDots from './menu-dots.svg?raw';
 import dollar from './dollar.svg?raw';
 import warning from './warning.svg?raw';
+import microphone from './microphone.svg?raw';
+import camera from './camera.svg?raw';
 export {
   analitcs,
   arrowDownLeft,
@@ -41,4 +43,6 @@ export {
   menuDots,
   dollar,
   warning,
+  microphone,
+  camera,
 };
