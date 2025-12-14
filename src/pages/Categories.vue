@@ -9,11 +9,14 @@
 
         <div class="categories-page__filters">
             <SelectButton v-model="selectedType" :options="filterOptions" option-label="label" option-value="value"
-                :allow-empty="false" />
+                @update:model-value="handleTypeChange" :allow-empty="false" />
         </div>
 
         <div class="categories-page__content">
-            <div v-if="filteredCategories.length === 0" class="categories-page__empty">
+            <div v-if="loading" class="categories-page__loading">
+                <ProgressSpinner />
+            </div>
+            <div v-else-if="filteredCategories.length === 0" class="categories-page__empty">
                 <div class="categories-page__empty-icon">
                     <VIcon :icon="warning" />
                 </div>
@@ -26,110 +29,108 @@
             </div>
             <div v-else class="categories-page__list">
                 <CategoryCard v-for="category in filteredCategories" :key="category.id" :category="category"
-                    @remove="removeCategory(category.id)" @edit="editCategory(category)"
-                    @toggle-visibility="toggleCategoryVisibility(category.id)" />
+                    @remove="removeCategoryHandler(category.id)" @edit="editCategory(category)" />
             </div>
         </div>
 
         <div class="categories-page__footer">
             <Button label="Добавить категорию" fluid :icon="plus" @click="drawerVisible = true" />
         </div>
-        <CategoryForm v-model:visible="drawerVisible" :edit-data="editingCategory" @submit="handleSubmit" />
+        <CategoryForm v-model:visible="drawerVisible" :edit-data="formEditData" @submit="handleSubmitWrapper" />
     </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { arrowLeft, plus, arrowUpRight, arrowDownLeft, dollar, warning } from '@/assets/icons';
+import { storeToRefs } from 'pinia';
+import { arrowLeft, plus, arrowUpRight, arrowDownLeft, warning } from '@/assets/icons';
 import router from '@/router/router';
-import { Button, SelectButton } from 'primevue';
+import { Button, SelectButton, ProgressSpinner } from 'primevue';
 import CategoryForm from '@/components/Categories/CategoryForm.vue';
 import CategoryCard from '@/components/Categories/CategoryCard.vue';
 import VIcon from '@/components/UI/VIcon.vue';
-import type { Category, CategoryType, CategoryFormData } from '@/composables/Categories/useCategories';
-import { useCategories } from '@/composables/Categories/useCategories';
+import type { Category, CategoryFormData } from '@/composables/Categories/types';
+import { CategoryType } from '@/composables/Categories/types';
+import { CATEGORY_TYPE_FILTER_OPTIONS } from '@/composables/Categories/data';
+import { useCategoriesStore } from '@/store/categoriesStore';
 import { useToastStore } from '@/store/toastsStore';
+import { onBeforeMount } from 'vue';
 
-const drawerVisible = ref(false);
-const editingCategory = ref<(CategoryFormData & { isDefault?: boolean; id?: string }) | null>(null);
 const selectedType = ref<CategoryType | 'all'>('all');
-const { categories, addCategory, removeCategory: removeCategoryAction, updateCategory, toggleCategoryVisibility, getCategoriesByType } = useCategories();
+const categoriesStore = useCategoriesStore();
+const { categories, drawerVisible, editingCategory, loading } = storeToRefs(categoriesStore);
+const { loadCategoriesByType, removeCategory, handleSubmit: handleSubmitInStore, editCategory: editCategoryInStore } = categoriesStore;
 const $toast = useToastStore();
 
-const filterOptions = [
-    { label: 'Все', value: 'all' as const },
-    { label: 'Доходы', value: 'income' as CategoryType },
-    { label: 'Расходы', value: 'expense' as CategoryType },
-    { label: 'Долги', value: 'debt' as CategoryType },
-];
+const filterOptions = CATEGORY_TYPE_FILTER_OPTIONS;
 
 const filteredCategories = computed(() => {
-    const type = selectedType.value === 'all' ? null : selectedType.value;
-    return getCategoriesByType(type);
+    return categories.value;
 });
 
-watch(drawerVisible, (value) => {
-    if (!value) {
-        editingCategory.value = null;
-    }
+const formEditData = computed(() => {
+    if (!editingCategory.value) return null;
+    return {
+        id: editingCategory.value.id,
+        name: editingCategory.value.name,
+        type: editingCategory.value.type,
+        icon: editingCategory.value.icon,
+        color: editingCategory.value.color,
+        isDefault: editingCategory.value.is_default,
+    };
 });
 
 const editCategory = (category: Category) => {
-    editingCategory.value = {
-        id: category.id,
-        name: category.name,
-        type: category.type,
-        icon: category.icon,
-        isHidden: category.isHidden,
-        isDefault: category.isDefault,
-    };
-    drawerVisible.value = true;
+    editCategoryInStore(category);
 };
 
 const getCategoryIcon = (type: CategoryType) => {
     switch (type) {
-        case 'income':
+        case CategoryType.INCOME:
             return arrowUpRight;
-        case 'expense':
+        case CategoryType.EXPENSE:
             return arrowDownLeft;
-        case 'debt':
-            return dollar;
         default:
             return arrowDownLeft;
     }
 };
 
-const removeCategory = (id: string) => {
-    const category = categories.value.find(cat => cat.id === id);
-    const success = removeCategoryAction(id);
-    if (!success && category) {
+const removeCategoryHandler = async (id: string) => {
+    const category = categories.value.find((cat: Category) => cat.id === id);
+    if (category?.is_default) {
         $toast.warning(
             'Нельзя удалить категорию по умолчанию',
             `Категория "${category.name}" является категорией по умолчанию и не может быть удалена`,
             getCategoryIcon(category.type)
         );
+        return;
+    }
+    try {
+        await removeCategory(id);
+    } catch (error) {
+        $toast.error('Ошибка', 'Не удалось удалить категорию');
     }
 };
 
-const handleSubmit = (data: CategoryFormData) => {
-    if (editingCategory.value && editingCategory.value.id) {
-        const category = categories.value.find(cat => cat.id === editingCategory.value?.id);
-        const success = updateCategory(editingCategory.value.id, data);
-        if (!success && category) {
-            $toast.error(
-                'Не удалось обновить категорию',
-                category.isDefault && data.type !== category.type
-                    ? 'Нельзя изменить тип категории по умолчанию'
-                    : 'Произошла ошибка при обновлении категории',
-                getCategoryIcon(category.type)
-            );
-        }
-        editingCategory.value = null;
-    } else {
-        addCategory(data);
+const handleSubmitWrapper = async (data: CategoryFormData) => {
+    try {
+        await handleSubmitInStore(data);
+    } catch (error) {
+        $toast.error('Ошибка', 'Не удалось сохранить категорию');
     }
-    drawerVisible.value = false;
 };
+
+const handleTypeChange = async (newType: CategoryType | 'all') => {
+    const type = newType === 'all' ? null : newType;
+    // При изменении фильтра принудительно загружаем данные
+    await loadCategoriesByType(type, true);
+};
+
+onBeforeMount(async () => {
+    const type = selectedType.value === 'all' ? null : selectedType.value;
+    // При первой загрузке проверяем, нужно ли загружать
+    await loadCategoriesByType(type, false);
+});
 
 </script>
 
@@ -226,6 +227,12 @@ const handleSubmit = (data: CategoryFormData) => {
         display: flex;
         flex-direction: column;
         gap: 1.2rem;
+    }
+
+    &__loading {
+        display: flex;
+        justify-content: center;
+        padding: 4rem 2rem;
     }
 
     &__footer {

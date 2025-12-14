@@ -4,7 +4,7 @@
             <div class="main-balance__total">
                 <div class="main-balance__total-content">
                     <h5 class="font-14-r">Общий баланс</h5>
-                    <p v-if="isVisible" class="gold-text">1 200 000 UZS</p>
+                    <p v-if="isVisible" class="gold-text">{{ formatAmount(balance) }} UZS</p>
                     <p v-else class="gold-text">••••••</p>
                 </div>
                 <VIcon :icon="isVisible ? eyeIcon : eyeClosedIcon" class="main-balance__total-icon"
@@ -16,14 +16,14 @@
                     <Button :icon="arrowUpRight" severity="danger" outlined class="main-balance__item-button" />
                     <div class="main-balance__item-content">
                         <h5>Расход</h5>
-                        <p class="gold-text">{{ formatAmount(-1166000) }} UZS</p>
+                        <p class="gold-text">{{ formatAmountWithSign(-expense) }} UZS</p>
                     </div>
                 </div>
                 <div class="main-balance__item">
                     <Button :icon="arrowDownLeft" severity="success" outlined class="main-balance__item-button" />
                     <div class="main-balance__item-content">
                         <h5>Доход</h5>
-                        <p class="gold-text">{{ formatAmount(767000) }} UZS</p>
+                        <p class="gold-text">{{ formatAmountWithSign(income) }} UZS</p>
                     </div>
                 </div>
             </div>
@@ -32,10 +32,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { Button } from 'primevue';
 import { arrowDownLeft, arrowUpRight, eyeIcon, eyeClosedIcon } from '@/assets/icons';
 import VIcon from '../UI/VIcon.vue';
+import { formatAmount, formatAmountWithSign } from '@/utils';
+import { useAnalyticsStore } from '@/store/analyticsStore';
+
+const analyticsStore = useAnalyticsStore();
 
 const isVisible = ref(true);
 
@@ -43,18 +47,25 @@ const toggleVisibility = () => {
     isVisible.value = !isVisible.value;
 };
 
-const formatAmount = (amount: number): string => {
-    const absAmount = Math.abs(amount);
-    const sign = amount < 0 ? '-' : '';
+const balance = computed(() => {
+    return analyticsStore.balance ? parseFloat(analyticsStore.balance.balance) : 0;
+});
 
-    if (absAmount >= 1000000) {
-        const millions = absAmount / 1000000;
-        const rounded = millions.toFixed(1);
-        return `${sign}${rounded.replace(/\.0$/, '')}M`;
+const income = computed(() => {
+    return analyticsStore.balance ? parseFloat(analyticsStore.balance.total_income) : 0;
+});
+
+const expense = computed(() => {
+    return analyticsStore.balance ? parseFloat(analyticsStore.balance.total_expense) : 0;
+});
+
+onMounted(async () => {
+    try {
+        await analyticsStore.loadBalance({ period: 'month' });
+    } catch (error) {
+        console.error('Failed to load balance:', error);
     }
-
-    return `${sign}${absAmount.toLocaleString('ru-RU')}`;
-};
+});
 </script>
 
 <style scoped lang="scss">

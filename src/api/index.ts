@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useToastStore } from '@/store/toastsStore.ts';
 
 const $axios = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL || 'http://95.111.250.65:8001',
 });
 
 const fetchToken = async (): Promise<{ success: boolean }> => {

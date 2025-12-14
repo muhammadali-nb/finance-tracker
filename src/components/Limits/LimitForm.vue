@@ -7,9 +7,9 @@
         <VForm @submit-form="handleSubmit" class="limit-form__form-wrapper">
             <div class="limit-form__form">
                 <div class="limit-form__form-section">
-                    <VSelect v-model="formData.category" :options="categories" option-label="name" option-value="name"
-                        placeholder="Выберите категорию для лимита" label="Категория" :rules="categoryRules"
-                        size="small" class="font-14-r" />
+                    <VSelect v-model="formData.category" :options="categoriesOptions" option-label="name"
+                        option-value="name" placeholder="Выберите категорию для лимита" label="Категория"
+                        :rules="categoryRules" size="small" class="font-14-r" />
                 </div>
 
                 <div class="limit-form__form-section">
@@ -43,45 +43,37 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import { Button } from 'primevue';
 import VDrawer from '@/components/UI/VDrawer.vue';
 import VForm from '@/components/Form/VForm.vue';
 import VInputNumber from '@/components/Form/VInputNumber.vue';
 import VSelect from '@/components/Form/VSelect.vue';
 import type { FormRule } from '@/composables/Form/types';
+import type { LimitFormData } from '@/composables/Limits/types';
+import { useCategoriesStore } from '@/store/categoriesStore';
+import { CategoryType } from '@/composables/Categories/types';
 
-export interface LimitFormData {
-    category: string | undefined;
-    budget: number;
-}
-
-export interface Category {
-    name: string;
-    value: string;
-}
 
 const props = withDefaults(
     defineProps<{
         visible: boolean;
-        categories?: Category[];
         editData?: LimitFormData | null;
     }>(),
     {
-        categories: () => [
-            { name: 'Питание', value: 'food' },
-            { name: 'Транспорт', value: 'transport' },
-            { name: 'Развлечения', value: 'entertainment' },
-            { name: 'Покупки', value: 'shopping' },
-            { name: 'Услуги', value: 'services' },
-            { name: 'Прочее', value: 'other' },
-        ],
         editData: null,
     }
 );
 
+const { categories } = storeToRefs(useCategoriesStore());
+
+const categoriesOptions = computed(() => {
+    return categories.value.filter((cat: any) => cat.type === CategoryType.EXPENSE);
+});
+
 const emit = defineEmits<{
     (e: 'update:visible', value: boolean): void;
-    (e: 'submit', data: LimitFormData): void;
+    (e: 'submit', data: LimitFormData | null): void;
 }>();
 
 const localVisible = ref(props.visible);
@@ -122,13 +114,11 @@ const formData = ref<LimitFormData>({
     budget: 0,
 });
 
+import { MONTHS_FULL } from '@/composables/Categories/data';
+
 const currentMonth = computed(() => {
     const date = new Date();
-    const months = [
-        'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
-        'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'
-    ];
-    return `${months[date.getMonth()]} ${date.getFullYear()} г.`;
+    return `${MONTHS_FULL[date.getMonth()]} ${date.getFullYear()} г.`;
 });
 
 const categoryRules: FormRule<string | number | undefined>[] = [
@@ -153,7 +143,7 @@ const resetForm = () => {
 };
 
 const handleSubmit = () => {
-    emit('submit', { ...formData.value });
+    emit('submit', formData.value);
     localVisible.value = false;
     emit('update:visible', false);
     resetForm();

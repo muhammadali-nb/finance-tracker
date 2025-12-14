@@ -52,6 +52,14 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/transactions',
+    name: 'transactions',
+    component: () => import('@/pages/Transactions.vue'),
+    meta: {
+      layout: 'Default',
+    },
+  },
+  {
     path: '/status/:type',
     name: 'status',
     component: () => import('@/pages/StatusPage.vue'),

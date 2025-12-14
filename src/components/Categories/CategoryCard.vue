@@ -2,15 +2,16 @@
     <div class="category-card">
         <div class="category-card__content">
             <div class="category-card__icon">
-                <VIcon :icon="categoryIcon" />
+                <span class="category-card__emoji">{{ category.icon }}</span>
+                <!-- <VIcon :icon="categoryIcon" class="category-card__icon-svg"
+                    :class="{ 'category-card__icon-svg--hidden': hasEmojiIcon }" /> -->
             </div>
             <div class="category-card__info">
                 <h3 class="category-card__name">{{ category.name }}</h3>
                 <div class="category-card__meta">
-                    <span class="category-card__type">{{ typeLabel }}</span>
-                    <span v-if="category.isDefault" class="category-card__badge">По умолчанию</span>
-                    <span v-if="category.isHidden"
-                        class="category-card__badge category-card__badge--hidden">Скрыта</span>
+                    <span class="category-card__type">{{ category.type === CategoryType.INCOME ? 'Доходы' : 'Расходы'
+                    }}</span>
+                    <span v-if="category.is_default" class="category-card__badge">По умолчанию</span>
                 </div>
             </div>
         </div>
@@ -25,9 +26,9 @@
 import { computed, ref } from 'vue';
 import { Button, TieredMenu } from 'primevue';
 import type { MenuItem } from 'primevue/menuitem';
-import type { Category, CategoryType } from '@/composables/Categories/useCategories';
-import { menuDots, arrowUpRight, arrowDownLeft, categories as defaultIcon, dollar } from '@/assets/icons';
-import VIcon from '@/components/UI/VIcon.vue';
+import type { Category } from '@/composables/Categories/types';
+import { CategoryType } from '@/composables/Categories/types';
+import { menuDots } from '@/assets/icons';
 
 const props = defineProps<{
     category: Category;
@@ -36,7 +37,6 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'remove'): void;
     (e: 'edit'): void;
-    (e: 'toggle-visibility'): void;
 }>();
 
 const menu = ref();
@@ -45,33 +45,16 @@ const toggleMenu = (event: Event) => {
     menu.value.toggle(event);
 };
 
-const typeLabel = computed(() => {
-    const labels = {
-        income: 'Доходы',
-        expense: 'Расходы',
-        debt: 'Долги',
-    };
-    return labels[props.category.type];
-});
+// const categoryIcon = computed(() => {
+//     return props.category.icon || typeIcons[props.category.type] || defaultIcon;
+// });
 
-const typeIcons: Record<CategoryType, string> = {
-    income: arrowDownLeft,
-    expense: arrowUpRight,
-    debt: dollar,
-};
-
-const categoryIcon = computed(() => {
-    if (props.category.type === 'debt') console.log(props.category.icon, typeIcons[props.category.type], defaultIcon);
-    return props.category.icon || typeIcons[props.category.type] || defaultIcon;
-});
+// // Проверяем, является ли icon эмодзи (строка с эмодзи обычно короткая и содержит не-ASCII символы)
+// const hasEmojiIcon = computed(() => {
+//     return props.category.icon && props.category.icon.length > 0 && props.category.icon.length <= 2;
+// });
 
 const menuItems = computed<MenuItem[]>(() => [
-    {
-        label: props.category.isHidden ? 'Показать' : 'Скрыть',
-        command: () => {
-            emit('toggle-visibility');
-        },
-    },
     {
         label: 'Редактировать',
         command: () => {
@@ -83,7 +66,7 @@ const menuItems = computed<MenuItem[]>(() => [
         command: () => {
             emit('remove');
         },
-        disabled: props.category.isDefault,
+        disabled: props.category.is_default,
     },
 ]);
 
@@ -147,6 +130,22 @@ const menuItems = computed<MenuItem[]>(() => [
         flex-shrink: 0;
         position: relative;
         z-index: 1;
+    }
+
+    &__emoji {
+        font-size: 2.4rem;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &__icon-svg {
+        display: block;
+
+        &--hidden {
+            display: none;
+        }
     }
 
     &__info {

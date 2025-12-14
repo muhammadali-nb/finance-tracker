@@ -1,51 +1,74 @@
 <script setup lang="ts">
+import { computed, onBeforeMount } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 import { Button } from 'primevue';
-import Transaction from '../UI/Transaction.vue';
-import { barber, burger, shop, taxi } from '@/assets/icons';
+import TransactionCard from '@/components/Transactions/TransactionCard.vue';
+import { useTransactionsStore } from '@/store/transactionsStore';
+import { useCategoriesStore } from '@/store/categoriesStore';
 
-const transactions = [
-    {
-        id: 1,
-        icon: taxi,
-        title: 'Такси',
-        amount: 1340,
-        date: '12:00',
-    },
-    {
-        id: 2,
-        icon: burger,
-        title: 'Бургер',
-        amount: 112000,
-        date: '11:00',
-    },
-    {
-        id: 3,
-        icon: shop,
-        title: 'Магазин',
-        amount: 100000,
-        date: '14:33',
-    },
-    {
-        id: 4,
-        icon: barber,
-        title: 'Барбер',
-        amount: 10200,
-        date: '15:01',
-    },
-];
+const router = useRouter();
+const transactionsStore = useTransactionsStore();
+const categoriesStore = useCategoriesStore();
+
+const { groupedTransactions, loading } = storeToRefs(transactionsStore);
+const { loadTransactions } = transactionsStore;
+const { loadCategories } = categoriesStore;
+
+// Показываем только первую группу (сегодняшний день)
+const todayTransactions = computed(() => {
+    if (groupedTransactions.value.length === 0) return null;
+    return groupedTransactions.value[0];
+});
+
+const handleViewAll = () => {
+    router.push({ name: 'transactions' });
+};
+
+onBeforeMount(async () => {
+    // Загружаем только транзакции за сегодня (один день)
+    const today = new Date();
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+
+    // Сохраняем старые фильтры, чтобы восстановить их после загрузки (если нужно)
+    const oldFilters = transactionsStore.currentFilters;
+
+    await Promise.all([
+        loadCategories(),
+        loadTransactions({
+            start_date: startOfDay.toISOString(),
+            end_date: endOfDay.toISOString(),
+            page_size: 10, // Ограничиваем количество для главной страницы
+        }, false, true) // force = true, чтобы всегда загружать свежие данные для главной страницы
+    ]);
+
+    // После загрузки сбрасываем фильтры, чтобы они не мешали при переходе на страницу транзакций
+    // Но только если мы не на странице транзакций
+    if (router.currentRoute.value.name !== 'transactions') {
+        transactionsStore.currentFilters = undefined;
+        transactionsStore.isLoaded = false;
+    }
+});
 </script>
 
 <template>
     <div class="main-transactions">
         <div class="main-transactions__header">
             <h1 class="font-20-b gold-text">Транзакции</h1>
-            <Button label="Посмотреть все" text size="small" />
+            <Button label="Посмотреть все" text size="small" @click="handleViewAll" />
         </div>
-        <div class="main-transactions__list">
-            <Transaction v-for="i in transactions" :key="i.id" :transaction="i" />
+        <div v-if="loading" class="main-transactions__loading">
+            <p class="font-14-r">Загрузка...</p>
+        </div>
+        <div v-else-if="todayTransactions && todayTransactions.transactions.length > 0" class="main-transactions__list">
+            <TransactionCard v-for="transaction in todayTransactions.transactions.slice(0, 5)" :key="transaction.id"
+                :transaction="transaction" />
+        </div>
+        <div v-else class="main-transactions__empty">
+            <p class="font-14-r">Нет транзакций за сегодня</p>
         </div>
     </div>
-
 </template>
 
 <style scoped lang="scss">
@@ -80,9 +103,26 @@ const transactions = [
     &__list {
         display: flex;
         flex-direction: column;
-        gap: .4rem;
+        gap: 0.8rem;
         position: relative;
         z-index: 1;
+    }
+
+    &__loading {
+        display: flex;
+        justify-content: center;
+        padding: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    &__empty {
+        display: flex;
+        justify-content: center;
+        padding: 2rem;
+        position: relative;
+        z-index: 1;
+        color: var(--text-color-secondary);
     }
 }
 </style>

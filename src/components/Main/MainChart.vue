@@ -29,14 +29,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { onClickOutside } from '@vueuse/core';
 
 import VChart from 'vue-echarts';
 import type { EChartsOption } from 'echarts';
+import { formatAmountShort } from '@/utils';
+import { useAnalyticsStore } from '@/store/analyticsStore';
+
+const analyticsStore = useAnalyticsStore();
+
 const chartRef = ref<InstanceType<typeof VChart> | null>(null);
 const chartWrapperRef = ref<HTMLElement | null>(null);
 const selectedCategory = ref<string | null>(null);
+const isDataLoaded = ref(false);
 
 // Сброс выбора при клике вне графика
 onClickOutside(chartWrapperRef, () => {
@@ -45,55 +51,26 @@ onClickOutside(chartWrapperRef, () => {
     }
 });
 
-// Моковый баланс
-const balance = 100000;
+// Данные из store
+const balance = computed(() => {
+    return analyticsStore.balance ? parseFloat(analyticsStore.balance.balance) : 0;
+});
 
-// Моковые данные для расходов с цветами
-const mockExpensesData = [
-    {
-        name: 'Питание',
-        value: 45000,
-        color: 'rgb(255, 107, 107)',
-    },
-    {
-        name: 'Транспорт',
-        value: 25000,
-        color: 'rgb(74, 144, 226)',
-    },
-    {
-        name: 'Развлечения',
-        value: 30000,
-        color: 'rgb(162, 89, 255)',
-    },
-    {
-        name: 'Покупки',
-        value: 20000,
-        color: 'rgb(46, 213, 115)',
-    },
-    {
-        name: 'Услуги',
-        value: 15000,
-        color: 'rgb(0, 206, 201)',
-    },
-    {
-        name: 'Прочее',
-        value: 10000,
-        color: 'rgb(149, 165, 166)',
-    },
-];
-
-// Форматирование суммы
-const formatAmount = (amount: number): string => {
-    if (amount >= 1000000) {
-        return `${(amount / 1000000).toFixed(1)}M`;
+const expensesData = computed(() => {
+    if (!analyticsStore.categoryBreakdown) {
+        return [];
     }
-    // До миллиона показываем полное число с разделителями
-    return amount.toLocaleString('ru-RU');
-};
+    return analyticsStore.categoryBreakdown.categories.map((cat) => ({
+        name: cat.category_name,
+        value: parseFloat(cat.amount),
+        percentage: cat.percentage.toString(),
+        color: cat.color || 'rgb(149, 165, 166)',
+    }));
+});
 
 // Форматированный баланс
 const formattedBalance = computed(() => {
-    return formatAmount(balance);
+    return formatAmountShort(balance.value);
 });
 
 // Выбор категории
@@ -112,16 +89,6 @@ const handleChartClick = (params: any) => {
     }
 };
 
-// Добавляем обработчик событий после монтирования
-onMounted(() => {
-    // Используем setTimeout для того, чтобы график успел инициализироваться
-    setTimeout(() => {
-        if (chartRef.value?.chart) {
-            chartRef.value.chart.on('click', handleChartClick);
-        }
-    }, 100);
-});
-
 // Текст и значение для центра
 const centerLabel = computed(() => {
     if (selectedCategory.value) {
@@ -135,22 +102,57 @@ const formattedCenterValue = computed(() => {
     if (selectedCategory.value) {
         const category = expensesData.value.find(c => c.name === selectedCategory.value);
         if (category) {
-            return formatAmount(category.value);
+            return formatAmountShort(category.value);
         }
     }
     return formattedBalance.value;
 });
 
-const expensesData = computed(() => {
-    const total = mockExpensesData.reduce((sum, item) => sum + item.value, 0);
-    return mockExpensesData.map((item) => ({
-        name: item.name,
-        value: item.value,
-        percentage: ((item.value / total) * 100).toFixed(1),
-        formatted: `${item.name}: ${(item.value / 1000).toFixed(0)}k (${((item.value / total) * 100).toFixed(1)}%)`,
-        color: item.color,
-    }));
+// Инициализация обработчика клика на график
+const initChartClickHandler = () => {
+    setTimeout(() => {
+        if (chartRef.value?.chart) {
+            chartRef.value.chart.off('click', handleChartClick);
+            chartRef.value.chart.on('click', handleChartClick);
+        }
+    }, 100);
+};
+
+// Загружаем данные при монтировании
+onMounted(async () => {
+    try {
+        // Загружаем данные (используем force для гарантии загрузки)
+        await Promise.all([
+            analyticsStore.loadBalance({ period: 'month' }, true),
+            analyticsStore.loadCategories({ period: 'month', type: 'expense' }, true),
+        ]);
+        isDataLoaded.value = true;
+        initChartClickHandler();
+    } catch (error) {
+        console.error('Failed to load chart data:', error);
+    }
 });
+
+// Следим за изменениями данных и обновляем обработчик клика
+watch(
+    () => expensesData.value.length,
+    (newLength) => {
+        if (isDataLoaded.value && newLength > 0) {
+            initChartClickHandler();
+        }
+    },
+    { immediate: true }
+);
+
+// Также следим за изменениями categoryBreakdown из store
+watch(
+    () => analyticsStore.categoryBreakdown,
+    () => {
+        if (analyticsStore.categoryBreakdown && isDataLoaded.value) {
+            initChartClickHandler();
+        }
+    }
+);
 
 const chartOption = computed<EChartsOption>(() => ({
     tooltip: {
@@ -188,14 +190,16 @@ const chartOption = computed<EChartsOption>(() => ({
             labelLine: {
                 show: false,
             },
-            data: mockExpensesData.map((item) => ({
-                value: item.value,
-                name: item.name,
-                itemStyle: {
-                    color: item.color,
-                    opacity: selectedCategory.value && selectedCategory.value !== item.name ? 0.3 : 1,
-                },
-            })),
+            data: expensesData.value.length > 0
+                ? expensesData.value.map((item) => ({
+                    value: item.value,
+                    name: item.name,
+                    itemStyle: {
+                        color: item.color,
+                        opacity: selectedCategory.value && selectedCategory.value !== item.name ? 0.3 : 1,
+                    },
+                }))
+                : [],
         },
     ],
 }));

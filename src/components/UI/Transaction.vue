@@ -2,6 +2,7 @@
 import { ITransaction } from '@/composables/Main/types';
 import VIcon from './VIcon.vue';
 import { Button } from 'primevue';
+import { formatAmount } from '@/utils';
 
 defineProps<{
     transaction: ITransaction;
@@ -17,7 +18,7 @@ defineProps<{
             <h1 class="font-16-r">{{ transaction.title }}</h1>
         </div>
         <div class="transaction-button__amount">
-            <p class="font-16-r">-{{ transaction.amount.toLocaleString('ru-RU') }} <span class="font-12-r">UZS</span>
+            <p class="font-16-r">-{{ formatAmount(transaction.amount) }} <span class="font-12-r">UZS</span>
             </p>
             <p class="font-12-r transaction-button__time">{{ transaction.date }}</p>
         </div>

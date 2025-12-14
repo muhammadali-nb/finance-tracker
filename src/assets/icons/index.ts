@@ -21,6 +21,7 @@ import dollar from './dollar.svg?raw';
 import warning from './warning.svg?raw';
 import microphone from './microphone.svg?raw';
 import camera from './camera.svg?raw';
+import filter from './filter.svg?raw';
 export {
   analitcs,
   arrowDownLeft,
@@ -45,4 +46,5 @@ export {
   warning,
   microphone,
   camera,
+  filter,
 };

@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onBeforeUnmount } from 'vue';
 import { Drawer } from 'primevue';
 
 const props = defineProps<{
@@ -26,14 +26,31 @@ const emit = defineEmits<{
 
 const localVisible = ref(props.visible);
 
+const lockBodyScroll = (lock: boolean) => {
+    if (lock) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
+};
+
 watch(() => props.visible, (newValue) => {
     localVisible.value = newValue;
+    lockBodyScroll(newValue);
+});
+
+watch(localVisible, (newValue) => {
+    lockBodyScroll(newValue);
 });
 
 const handleVisibilityChange = (value: boolean) => {
     localVisible.value = value;
     emit('update:visible', value);
 };
+
+onBeforeUnmount(() => {
+    lockBodyScroll(false);
+});
 
 </script>
 

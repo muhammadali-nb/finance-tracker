@@ -12,153 +12,161 @@
                 :allow-empty="false" />
         </div>
 
-        <div class="analytics-page__stats">
-            <div class="analytics-page__stat-card">
-                <div class="analytics-page__stat-card-header">
-                    <VIcon :icon="arrowUpRight" class="analytics-page__stat-card-icon income" />
-                    <span class="analytics-page__stat-card-label">Доходы</span>
-                </div>
-                <p class="analytics-page__stat-card-value gold-text">{{ formatAmount(stats.income) }} UZS</p>
-                <div class="analytics-page__stat-card-change" :class="{ positive: stats.incomeChange > 0 }">
-                    <VIcon :icon="stats.incomeChange > 0 ? arrowUpRight : arrowDownLeft"
-                        class="analytics-page__stat-card-change-icon" />
-                    <span>{{ Math.abs(stats.incomeChange) }}%</span>
-                </div>
-            </div>
-
-            <div class="analytics-page__stat-card">
-                <div class="analytics-page__stat-card-header">
-                    <VIcon :icon="arrowDownLeft" class="analytics-page__stat-card-icon expense" />
-                    <span class="analytics-page__stat-card-label">Расходы</span>
-                </div>
-                <p class="analytics-page__stat-card-value gold-text">{{ formatAmount(stats.expense) }} UZS</p>
-                <div class="analytics-page__stat-card-change" :class="{ positive: stats.expenseChange < 0 }">
-                    <VIcon :icon="stats.expenseChange < 0 ? arrowDownLeft : arrowUpRight"
-                        class="analytics-page__stat-card-change-icon" />
-                    <span>{{ Math.abs(stats.expenseChange) }}%</span>
-                </div>
-            </div>
-
-            <div class="analytics-page__stat-card">
-                <div class="analytics-page__stat-card-header">
-                    <VIcon :icon="dollar" class="analytics-page__stat-card-icon balance" />
-                    <span class="analytics-page__stat-card-label">Баланс</span>
-                </div>
-                <p class="analytics-page__stat-card-value gold-text">{{ formatAmount(stats.balance) }} UZS</p>
-                <div class="analytics-page__stat-card-change" :class="{ positive: stats.balanceChange > 0 }">
-                    <VIcon :icon="stats.balanceChange > 0 ? arrowUpRight : arrowDownLeft"
-                        class="analytics-page__stat-card-change-icon" />
-                    <span>{{ Math.abs(stats.balanceChange) }}%</span>
-                </div>
-            </div>
-
-            <div class="analytics-page__stat-card">
-                <div class="analytics-page__stat-card-header">
-                    <VIcon :icon="analitcs" class="analytics-page__stat-card-icon average" />
-                    <span class="analytics-page__stat-card-label">Средний расход</span>
-                </div>
-                <p class="analytics-page__stat-card-value gold-text">{{ formatAmount(stats.averageExpense) }} UZS</p>
-                <div class="analytics-page__stat-card-change" :class="{ positive: stats.averageChange < 0 }">
-                    <VIcon :icon="stats.averageChange < 0 ? arrowDownLeft : arrowUpRight"
-                        class="analytics-page__stat-card-change-icon" />
-                    <span>{{ Math.abs(stats.averageChange) }}%</span>
-                </div>
-            </div>
+        <div v-if="loading" class="analytics-page__loading">
+            <ProgressSpinner />
         </div>
+        <template v-else>
+            <div class="analytics-page__stats">
+                <div class="analytics-page__stat-card">
+                    <div class="analytics-page__stat-card-header">
+                        <VIcon :icon="arrowUpRight" class="analytics-page__stat-card-icon income" />
+                        <span class="analytics-page__stat-card-label">Доходы</span>
+                    </div>
+                    <p class="analytics-page__stat-card-value gold-text">{{ formatAmount(stats.income) }} UZS</p>
+                    <div class="analytics-page__stat-card-change" :class="{ positive: stats.incomeChange > 0 }">
+                        <VIcon :icon="stats.incomeChange > 0 ? arrowUpRight : arrowDownLeft"
+                            class="analytics-page__stat-card-change-icon" />
+                        <span>{{ Math.abs(stats.incomeChange) }}%</span>
+                    </div>
+                </div>
 
-        <div class="analytics-page__content">
-            <div class="analytics-page__chart-card">
-                <div class="analytics-page__chart-card-header">
-                    <h2 class="font-18-b gold-text">Динамика</h2>
+                <div class="analytics-page__stat-card">
+                    <div class="analytics-page__stat-card-header">
+                        <VIcon :icon="arrowDownLeft" class="analytics-page__stat-card-icon expense" />
+                        <span class="analytics-page__stat-card-label">Расходы</span>
+                    </div>
+                    <p class="analytics-page__stat-card-value gold-text">{{ formatAmount(stats.expense) }} UZS</p>
+                    <div class="analytics-page__stat-card-change" :class="{ positive: stats.expenseChange < 0 }">
+                        <VIcon :icon="stats.expenseChange < 0 ? arrowDownLeft : arrowUpRight"
+                            class="analytics-page__stat-card-change-icon" />
+                        <span>{{ Math.abs(stats.expenseChange) }}%</span>
+                    </div>
                 </div>
-                <div class="analytics-page__chart-wrapper">
-                    <VChart :option="lineChartOption" class="analytics-page__chart" />
-                </div>
-            </div>
 
-            <div class="analytics-page__chart-card">
-                <div class="analytics-page__chart-card-header">
-                    <h2 class="font-18-b gold-text">Средний тренд</h2>
+                <div class="analytics-page__stat-card">
+                    <div class="analytics-page__stat-card-header">
+                        <VIcon :icon="dollar" class="analytics-page__stat-card-icon balance" />
+                        <span class="analytics-page__stat-card-label">Баланс</span>
+                    </div>
+                    <p class="analytics-page__stat-card-value gold-text">{{ formatAmount(stats.balance) }} UZS</p>
+                    <div class="analytics-page__stat-card-change" :class="{ positive: stats.balanceChange > 0 }">
+                        <VIcon :icon="stats.balanceChange > 0 ? arrowUpRight : arrowDownLeft"
+                            class="analytics-page__stat-card-change-icon" />
+                        <span>{{ Math.abs(stats.balanceChange) }}%</span>
+                    </div>
                 </div>
-                <div class="analytics-page__chart-wrapper">
-                    <VChart :option="trendChartOption" class="analytics-page__chart" />
-                </div>
-            </div>
 
-            <div class="analytics-page__chart-card">
-                <div class="analytics-page__chart-card-header">
-                    <h2 class="font-18-b gold-text">Расходы по категориям</h2>
-                </div>
-                <div ref="pieChartWrapperRef" class="analytics-page__chart-wrapper pie">
-                    <VChart ref="pieChartRef" :option="pieChartOption" class="analytics-page__chart" />
-                    <Transition name="fade">
-                        <div v-if="selectedCategory" class="analytics-page__chart-center">
-                            <p class="analytics-page__chart-center-label font-14-r">{{ selectedCategory }}</p>
-                            <h2 class="analytics-page__chart-center-value font-30-b gold-text">
-                                {{ formatAmount(getCategoryAmount(selectedCategory)) }}
-                            </h2>
-                        </div>
-                        <div v-else class="analytics-page__chart-center">
-                            <p class="analytics-page__chart-center-label font-14-r">Всего расходов</p>
-                            <h2 class="analytics-page__chart-center-value font-30-b gold-text">
-                                {{ formatAmount(stats.expense) }}
-                            </h2>
-                        </div>
-                    </Transition>
-                </div>
-                <div class="analytics-page__categories">
-                    <div v-for="category in categoryData" :key="category.name" class="analytics-page__category"
-                        :class="{ 'analytics-page__category--active': selectedCategory === category.name }"
-                        @click="selectCategory(category.name)">
-                        <div class="analytics-page__category-icon" :style="{ backgroundColor: category.color }"></div>
-                        <p class="analytics-page__category-name font-12-r">{{ category.name }}</p>
-                        <span class="analytics-page__category-percent font-10-r">{{ category.percentage }}%</span>
+                <div class="analytics-page__stat-card">
+                    <div class="analytics-page__stat-card-header">
+                        <VIcon :icon="analitcs" class="analytics-page__stat-card-icon average" />
+                        <span class="analytics-page__stat-card-label">Средний расход</span>
+                    </div>
+                    <p class="analytics-page__stat-card-value gold-text">{{ formatAmount(stats.averageExpense) }} UZS
+                    </p>
+                    <div class="analytics-page__stat-card-change" :class="{ positive: stats.averageChange < 0 }">
+                        <VIcon :icon="stats.averageChange < 0 ? arrowDownLeft : arrowUpRight"
+                            class="analytics-page__stat-card-change-icon" />
+                        <span>{{ Math.abs(stats.averageChange) }}%</span>
                     </div>
                 </div>
             </div>
 
-            <div class="analytics-page__top-categories">
-                <div class="analytics-page__top-categories-header">
-                    <h2 class="font-18-b gold-text">Топ категорий</h2>
-                </div>
-                <div v-if="topCategories.length === 0" class="analytics-page__empty">
-                    <div class="analytics-page__empty-icon">
-                        <VIcon :icon="warning" />
+            <div class="analytics-page__content">
+                <div class="analytics-page__chart-card">
+                    <div class="analytics-page__chart-card-header">
+                        <h2 class="font-18-b gold-text">Динамика</h2>
                     </div>
-                    <p class="analytics-page__empty-text">Нет данных</p>
-                    <p class="analytics-page__empty-hint">Добавьте транзакции для анализа</p>
+                    <div class="analytics-page__chart-wrapper">
+                        <VChart :option="lineChartOption" class="analytics-page__chart" />
+                    </div>
                 </div>
-                <div v-else class="analytics-page__top-categories-list">
-                    <div v-for="(category, index) in topCategories" :key="category.name"
-                        class="analytics-page__top-category">
-                        <div class="analytics-page__top-category-rank">{{ index + 1 }}</div>
-                        <div class="analytics-page__top-category-icon" :style="{ backgroundColor: category.color }">
+
+                <div class="analytics-page__chart-card">
+                    <div class="analytics-page__chart-card-header">
+                        <h2 class="font-18-b gold-text">Средний тренд</h2>
+                    </div>
+                    <div class="analytics-page__chart-wrapper">
+                        <VChart :option="trendChartOption" class="analytics-page__chart" />
+                    </div>
+                </div>
+
+                <div class="analytics-page__chart-card">
+                    <div class="analytics-page__chart-card-header">
+                        <h2 class="font-18-b gold-text">Расходы по категориям</h2>
+                    </div>
+                    <div ref="pieChartWrapperRef" class="analytics-page__chart-wrapper pie">
+                        <VChart ref="pieChartRef" :option="pieChartOption" class="analytics-page__chart" />
+                        <Transition name="fade">
+                            <div v-if="selectedCategory" class="analytics-page__chart-center">
+                                <p class="analytics-page__chart-center-label font-14-r">{{ selectedCategory }}</p>
+                                <h2 class="analytics-page__chart-center-value font-30-b gold-text">
+                                    {{ formatAmount(getCategoryAmount(selectedCategory)) }}
+                                </h2>
+                            </div>
+                            <div v-else class="analytics-page__chart-center">
+                                <p class="analytics-page__chart-center-label font-14-r">Всего расходов</p>
+                                <h2 class="analytics-page__chart-center-value font-30-b gold-text">
+                                    {{ formatAmount(stats.expense) }}
+                                </h2>
+                            </div>
+                        </Transition>
+                    </div>
+                    <div class="analytics-page__categories">
+                        <div v-for="category in categoryData" :key="category.name" class="analytics-page__category"
+                            :class="{ 'analytics-page__category--active': selectedCategory === category.name }"
+                            @click="selectCategory(category.name)">
+                            <div class="analytics-page__category-icon" :style="{ backgroundColor: category.color }">
+                            </div>
+                            <p class="analytics-page__category-name font-12-r">{{ category.name }}</p>
+                            <span class="analytics-page__category-percent font-10-r">{{ category.percentage }}%</span>
                         </div>
-                        <div class="analytics-page__top-category-info">
-                            <p class="analytics-page__top-category-name font-14-r">{{ category.name }}</p>
-                            <p class="analytics-page__top-category-amount font-12-r">
-                                {{ formatAmount(category.value) }} UZS
-                            </p>
+                    </div>
+                </div>
+
+                <div class="analytics-page__top-categories">
+                    <div class="analytics-page__top-categories-header">
+                        <h2 class="font-18-b gold-text">Топ категорий</h2>
+                    </div>
+                    <div v-if="topCategories.length === 0" class="analytics-page__empty">
+                        <div class="analytics-page__empty-icon">
+                            <VIcon :icon="warning" />
                         </div>
-                        <div class="analytics-page__top-category-percent">
-                            <span class="font-14-b">{{ category.percentage }}%</span>
+                        <p class="analytics-page__empty-text">Нет данных</p>
+                        <p class="analytics-page__empty-hint">Добавьте транзакции для анализа</p>
+                    </div>
+                    <div v-else class="analytics-page__top-categories-list">
+                        <div v-for="(category, index) in topCategories" :key="category.name"
+                            class="analytics-page__top-category">
+                            <div class="analytics-page__top-category-rank">{{ index + 1 }}</div>
+                            <div class="analytics-page__top-category-icon" :style="{ backgroundColor: category.color }">
+                            </div>
+                            <div class="analytics-page__top-category-info">
+                                <p class="analytics-page__top-category-name font-14-r">{{ category.name }}</p>
+                                <p class="analytics-page__top-category-amount font-12-r">
+                                    {{ formatAmount(category.value) }} UZS
+                                </p>
+                            </div>
+                            <div class="analytics-page__top-category-percent">
+                                <span class="font-14-b">{{ category.percentage }}%</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </template>
     </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { onClickOutside } from '@vueuse/core';
-import { Button, SelectButton } from 'primevue';
+import { Button, SelectButton, ProgressSpinner } from 'primevue';
 import VChart from 'vue-echarts';
 import { arrowLeft, arrowUpRight, arrowDownLeft, dollar, analitcs, warning } from '@/assets/icons';
 import router from '@/router/router';
 import VIcon from '@/components/UI/VIcon.vue';
-import { useAnalytics, type Period } from '@/composables/Analytics/useAnalytics';
+import { useAnalytics } from '@/composables/Analytics/useAnalytics';
+import type { Period } from '@/composables/Analytics/types';
 
 const {
     selectedPeriod,
@@ -172,6 +180,7 @@ const {
     formatAmount,
     getCategoryAmount,
     selectCategory,
+    loading,
 } = useAnalytics();
 
 const pieChartRef = ref<InstanceType<typeof VChart> | null>(null);
@@ -328,6 +337,12 @@ onMounted(() => {
                 height: 1.2rem;
             }
         }
+    }
+
+    &__loading {
+        display: flex;
+        justify-content: center;
+        padding: 4rem 2rem;
     }
 
     &__content {

@@ -13,7 +13,7 @@
                 </div>
 
                 <div class="debt-form__form-section">
-                    <VInputText v-model="formData.personName" placeholder="Введите имя человека" label="Имя"
+                    <VInputText v-model="formData.person_name" placeholder="Введите имя человека" label="Имя"
                         :rules="nameRules" size="small" class="font-14-r" />
                 </div>
 
@@ -28,14 +28,8 @@
                 </div>
 
                 <div class="debt-form__form-section">
-                    <VInputText v-model="formData.dueDate" placeholder="ДД.ММ.ГГГГ" label="Срок возврата (необязательно)"
+                    <VInputText v-model="formData.due_date" type="date" label="Срок возврата (необязательно)"
                         size="small" class="font-14-r" />
-                </div>
-
-                <div class="debt-form__form-section">
-                    <VSelect v-model="formData.status" :options="statusOptions" option-label="label" option-value="value"
-                        placeholder="Выберите статус" label="Статус" :rules="statusRules" size="small"
-                        class="font-14-r" />
                 </div>
             </div>
 
@@ -56,12 +50,13 @@ import VInputText from '@/components/Form/VInputText.vue';
 import VInputNumber from '@/components/Form/VInputNumber.vue';
 import VSelect from '@/components/Form/VSelect.vue';
 import type { FormRule } from '@/composables/Form/types';
-import type { DebtFormData, DebtType, DebtStatus } from '@/composables/Debts/useDebts';
+import type { DebtFormData } from '@/composables/Debts/types';
+import { DebtType, DebtStatus } from '@/composables/Debts/types';
 
 const props = withDefaults(
     defineProps<{
         visible: boolean;
-        editData?: DebtFormData & { id?: string } | null;
+        editData?: DebtFormData | null;
     }>(),
     {
         editData: null,
@@ -77,14 +72,8 @@ const localVisible = ref(props.visible);
 const isEditMode = computed(() => !!props.editData);
 
 const typeOptions = [
-    { label: 'Я занял(а)', value: 'borrowed' as DebtType },
-    { label: 'Мне должны', value: 'lent' as DebtType },
-];
-
-const statusOptions = [
-    { label: 'Открыт', value: 'open' as DebtStatus },
-    { label: 'Просрочен', value: 'overdue' as DebtStatus },
-    { label: 'Погашен', value: 'paid' as DebtStatus },
+    { label: 'Я занял(а)', value: DebtType.I_OWE },
+    { label: 'Мне должны', value: DebtType.OWE_ME },
 ];
 
 watch(() => props.visible, (newValue) => {
@@ -92,11 +81,11 @@ watch(() => props.visible, (newValue) => {
     if (newValue && props.editData) {
         formData.value = {
             type: props.editData.type,
-            personName: props.editData.personName,
+            person_name: props.editData.person_name,
             amount: props.editData.amount,
+            currency: props.editData.currency || 'uzs',
             description: props.editData.description || '',
-            dueDate: props.editData.dueDate || '',
-            status: props.editData.status,
+            due_date: props.editData.due_date || '',
         };
     } else if (!newValue) {
         resetForm();
@@ -107,11 +96,11 @@ watch(() => props.editData, (newData) => {
     if (newData && localVisible.value) {
         formData.value = {
             type: newData.type,
-            personName: newData.personName,
+            person_name: newData.person_name,
             amount: newData.amount,
+            currency: newData.currency || 'uzs',
             description: newData.description || '',
-            dueDate: newData.dueDate || '',
-            status: newData.status,
+            due_date: newData.due_date || '',
         };
     }
 });
@@ -125,12 +114,12 @@ const handleVisibilityChange = (value: boolean) => {
 };
 
 const formData = ref<DebtFormData>({
-    type: 'borrowed',
-    personName: '',
+    type: DebtType.I_OWE,
+    person_name: '',
     amount: 0,
+    currency: 'uzs',
     description: '',
-    dueDate: '',
-    status: 'open',
+    due_date: '',
 });
 
 const nameRules: FormRule<string>[] = [
@@ -155,21 +144,14 @@ const amountRules: FormRule<number>[] = [
     },
 ];
 
-const statusRules: FormRule<string | number>[] = [
-    (value) => {
-        if (!value) return 'Выберите статус';
-        return true;
-    },
-];
-
 const resetForm = () => {
     formData.value = {
-        type: 'borrowed',
-        personName: '',
+        type: DebtType.I_OWE,
+        person_name: '',
         amount: 0,
+        currency: 'uzs',
         description: '',
-        dueDate: '',
-        status: 'open',
+        due_date: '',
     };
 };
 
@@ -219,5 +201,3 @@ const handleSubmit = () => {
     }
 }
 </style>
-
-

@@ -28,8 +28,10 @@
 import { computed, ref } from 'vue';
 import { Button, ProgressBar, TieredMenu } from 'primevue';
 import type { MenuItem } from 'primevue/menuitem';
-import type { Limit } from '@/composables/Limits/useLimits';
 import { menuDots } from '@/assets/icons';
+import type { Limit } from '@/composables/Limits/types';
+import { MONTHS_FULL } from '@/composables/Categories/data';
+import { formatAmount } from '@/utils';
 
 const props = defineProps<{
     limit: Limit;
@@ -62,26 +64,31 @@ const menuItems = computed<MenuItem[]>(() => [
 ]);
 
 const categoryName = computed(() => {
-    return props.limit.category || 'Не выбрано';
+    return props.limit.category_name || 'Не выбрано';
 });
 
 const formattedBudget = computed(() => {
-    return props.limit.budget.toLocaleString('ru-RU');
+    return formatAmount(props.limit.amount);
 });
 
 const period = computed(() => {
-    return `${props.limit.month} ${props.limit.year} г.`;
+    const startDate = new Date(props.limit.period_start);
+    const endDate = new Date(props.limit.period_end);
+
+    const startMonth = MONTHS_FULL[startDate.getMonth()];
+    const startYear = startDate.getFullYear();
+    const endMonth = MONTHS_FULL[endDate.getMonth()];
+    const endYear = endDate.getFullYear();
+
+    if (startMonth === endMonth && startYear === endYear) {
+        return `${startMonth} ${startYear} г.`;
+    }
+
+    return `${startMonth} ${startYear} - ${endMonth} ${endYear} г.`;
 });
 
 const progressPercentage = computed(() => {
-    let hash = 0;
-    for (let i = 0; i < props.limit.id.length; i++) {
-        const char = props.limit.id.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-    }
-    const random = Math.abs(hash) % 101;
-    return random;
+    return props.limit.percentage || 0;
 });
 </script>
 

@@ -2,20 +2,21 @@
     <div class="debt-card">
         <div class="debt-card__content">
             <div class="debt-card__icon" :class="`debt-card__icon--${debt.type}`">
-                <VIcon :icon="debt.type === 'borrowed' ? arrowDownLeft : arrowUpRight" />
+                <VIcon :icon="debt.type === DebtType.I_OWE ? arrowDownLeft : arrowUpRight" />
             </div>
             <div class="debt-card__info">
-                <h3 class="debt-card__name">{{ debt.personName }}</h3>
+                <h3 class="debt-card__name">{{ debt.person_name }}</h3>
                 <div class="debt-card__meta">
                     <span class="debt-card__amount" :class="`debt-card__amount--${debt.type}`">
-                        {{ debt.type === 'borrowed' ? '-' : '+' }}{{ formatAmount(debt.amount) }} UZS
+                        {{ debt.type === DebtType.I_OWE ? '-' : '+' }}{{ formatAmount(debt.amount) }} {{
+                            debt.currency.toUpperCase() }}
                     </span>
                     <span class="debt-card__status" :class="`debt-card__status--${debt.status}`">
                         {{ statusLabel }}
                     </span>
                 </div>
                 <p v-if="debt.description" class="debt-card__description">{{ debt.description }}</p>
-                <p v-if="debt.dueDate" class="debt-card__date">Срок: {{ formatDate(debt.dueDate) }}</p>
+                <p v-if="debt.due_date" class="debt-card__date">Срок: {{ formatDate(debt.due_date) }}</p>
             </div>
         </div>
         <div class="debt-card__menu-wrapper">
@@ -29,9 +30,11 @@
 import { computed, ref } from 'vue';
 import { Button, TieredMenu } from 'primevue';
 import type { MenuItem } from 'primevue/menuitem';
-import type { Debt, DebtStatus } from '@/composables/Debts/useDebts';
+import type { Debt } from '@/composables/Debts/types';
+import { DebtType, DebtStatus } from '@/composables/Debts/types';
 import { menuDots, arrowUpRight, arrowDownLeft } from '@/assets/icons';
 import VIcon from '@/components/UI/VIcon.vue';
+import { formatAmount, formatDate } from '@/utils';
 
 const props = defineProps<{
     debt: Debt;
@@ -51,24 +54,15 @@ const toggleMenu = (event: Event) => {
 
 const statusLabel = computed(() => {
     const labels: Record<DebtStatus, string> = {
-        open: 'Открыт',
-        overdue: 'Просрочен',
-        paid: 'Погашен',
+        [DebtStatus.OPEN]: 'Открыт',
+        [DebtStatus.OVERDUE]: 'Просрочен',
+        [DebtStatus.PAID]: 'Погашен',
     };
     return labels[props.debt.status];
 });
 
-const formatAmount = (amount: number) => {
-    return amount.toLocaleString('ru-RU');
-};
-
-const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
-};
-
 const menuItems = computed<MenuItem[]>(() => [
-    ...(props.debt.status !== 'paid' ? [{
+    ...(props.debt.status !== DebtStatus.PAID ? [{
         label: 'Отметить как погашенный',
         command: () => {
             emit('mark-paid');
@@ -146,13 +140,13 @@ const menuItems = computed<MenuItem[]>(() => [
         box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
         color: var(--primary-600);
 
-        &--borrowed {
+        &--i_owe {
             background: linear-gradient(135deg, rgba(255, 65, 43, 0.15) 0%, rgba(255, 100, 82, 0.1) 100%);
             border-color: rgba(255, 65, 43, 0.3);
             color: rgb(255, 65, 43);
         }
 
-        &--lent {
+        &--owe_me {
             background: linear-gradient(135deg, rgba(90, 204, 62, 0.15) 0%, rgba(138, 222, 116, 0.1) 100%);
             border-color: rgba(90, 204, 62, 0.3);
             color: rgb(90, 204, 62);
@@ -184,11 +178,11 @@ const menuItems = computed<MenuItem[]>(() => [
         font: var(--font-16-b);
         color: var(--text-color);
 
-        &--borrowed {
+        &--i_owe {
             color: rgb(255, 65, 43);
         }
 
-        &--lent {
+        &--owe_me {
             color: rgb(90, 204, 62);
         }
     }
@@ -240,5 +234,3 @@ const menuItems = computed<MenuItem[]>(() => [
     }
 }
 </style>
-
-

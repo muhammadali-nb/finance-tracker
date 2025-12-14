@@ -13,14 +13,14 @@
                 <VIcon :icon="arrowDownLeft" class="debts-page__balance-icon" />
                 <div class="debts-page__balance-content">
                     <h5 class="font-14-r">Я занял(а)</h5>
-                    <p class="font-20-r gold-text">{{ formatAmount(totalBorrowed) }} UZS</p>
+                    <p class="font-16-r gold-text">{{ formatAmount(totalBorrowed) }} UZS</p>
                 </div>
             </div>
             <div class="debts-page__balance-item">
                 <VIcon :icon="arrowUpRight" class="debts-page__balance-icon" />
                 <div class="debts-page__balance-content">
                     <h5 class="font-14-r">Мне должны</h5>
-                    <p class="font-20-r gold-text">{{ formatAmount(totalLent) }} UZS</p>
+                    <p class="font-16-r gold-text">{{ formatAmount(totalLent) }} UZS</p>
                 </div>
             </div>
         </div>
@@ -37,7 +37,10 @@
         </div>
 
         <div class="debts-page__content">
-            <div v-if="filteredDebts.length === 0" class="debts-page__empty">
+            <div v-if="loading" class="debts-page__loading">
+                <ProgressSpinner />
+            </div>
+            <div v-else-if="filteredDebts.length === 0" class="debts-page__empty">
                 <div class="debts-page__empty-icon">
                     <VIcon :icon="warning" />
                 </div>
@@ -45,7 +48,7 @@
                 <p class="debts-page__empty-hint">Попробуйте другие фильтры</p>
             </div>
             <div v-else class="debts-page__list">
-                <DebtCard v-for="debt in filteredDebts" :key="debt.id" :debt="debt" @remove="removeDebt(debt.id)"
+                <DebtCard v-for="debt in filteredDebts" :key="debt.id" :debt="debt" @remove="removeDebtHandler(debt.id)"
                     @edit="editDebt(debt)" @mark-paid="markAsPaid(debt.id)" />
             </div>
         </div>
@@ -53,98 +56,112 @@
         <div class="debts-page__footer">
             <Button label="Добавить долг" fluid :icon="plus" @click="drawerVisible = true" />
         </div>
-        <DebtForm v-model:visible="drawerVisible" :edit-data="editingDebt" @submit="handleSubmit" />
+        <DebtForm v-model:visible="drawerVisible" :edit-data="formEditData" @submit="handleSubmitWrapper"
+            @update:visible="handleDrawerVisibilityChange" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { Button, SelectButton } from 'primevue';
+import { computed, ref, onBeforeMount } from 'vue';
+import { storeToRefs } from 'pinia';
+import { Button, SelectButton, ProgressSpinner } from 'primevue';
 import DebtForm from '@/components/Debts/DebtForm.vue';
 import DebtCard from '@/components/Debts/DebtCard.vue';
 import VIcon from '@/components/UI/VIcon.vue';
-import type { Debt, DebtType, DebtStatus, DebtFormData } from '@/composables/Debts/useDebts';
-import { useDebts } from '@/composables/Debts/useDebts';
+import type { Debt, DebtFormData } from '@/composables/Debts/types';
+import { DebtType, DebtStatus } from '@/composables/Debts/types';
+import { DEBT_TYPE_FILTER_OPTIONS, DEBT_STATUS_FILTER_OPTIONS } from '@/composables/Debts/data';
+import { useDebtsStore } from '@/store/debtsStore';
+import { useToastStore } from '@/store/toastsStore';
 import { arrowDownLeft, arrowUpRight, plus, arrowLeft, warning } from '@/assets/icons';
 import router from '@/router/router';
+import { formatAmount } from '@/utils';
 
-const drawerVisible = ref(false);
-const editingDebt = ref<(DebtFormData & { id?: string }) | null>(null);
 const selectedType = ref<DebtType | 'all'>('all');
 const selectedStatus = ref<DebtStatus | 'all'>('all');
 
-const {
-    debts,
-    addDebt,
-    removeDebt: removeDebtAction,
-    updateDebt,
-    markAsPaid: markAsPaidAction,
-    getFilteredDebts,
-    getTotalBorrowed,
-    getTotalLent,
-} = useDebts();
+const debtsStore = useDebtsStore();
+const { debts, balance, drawerVisible, editingDebt, loading } = storeToRefs(debtsStore);
+const { removeDebt, editDebt: editDebtInStore, handleSubmit: handleSubmitInStore, markDebtAsPaid, loadDebts, loadDebtBalance } = debtsStore;
+const $toast = useToastStore();
 
-const totalBorrowed = computed(() => getTotalBorrowed());
-const totalLent = computed(() => getTotalLent());
+const totalBorrowed = computed(() => {
+    return balance.value ? parseFloat(balance.value.i_owe_total) : 0;
+});
 
-const typeFilterOptions = [
-    { label: 'Все', value: 'all' as const },
-    { label: 'Я занял(а)', value: 'borrowed' as DebtType },
-    { label: 'Мне должны', value: 'lent' as DebtType },
-];
+const totalLent = computed(() => {
+    return balance.value ? parseFloat(balance.value.owe_me_total) : 0;
+});
 
-const statusFilterOptions = [
-    { label: 'Открытые', value: 'open' as DebtStatus },
-    { label: 'Просрочено', value: 'overdue' as DebtStatus },
-    { label: 'Погашено', value: 'paid' as DebtStatus },
-];
+const typeFilterOptions = DEBT_TYPE_FILTER_OPTIONS;
+const statusFilterOptions = DEBT_STATUS_FILTER_OPTIONS;
 
 const filteredDebts = computed(() => {
-    const type = selectedType.value === 'all' ? 'all' : selectedType.value;
-    const status = selectedStatus.value === 'all' ? 'all' : selectedStatus.value;
-    return getFilteredDebts(type, status);
-});
+    let filtered = debts.value;
 
-watch(drawerVisible, (value) => {
-    if (!value) {
-        editingDebt.value = null;
+    if (selectedType.value !== 'all') {
+        filtered = filtered.filter(debt => debt.type === selectedType.value);
     }
+
+    if (selectedStatus.value !== 'all') {
+        filtered = filtered.filter(debt => debt.status === selectedStatus.value);
+    }
+
+    return filtered;
 });
 
-const formatAmount = (amount: number) => {
-    return amount.toLocaleString('ru-RU');
-};
+const formEditData = computed(() => {
+    if (!editingDebt.value) return null;
+    return {
+        type: editingDebt.value.type,
+        person_name: editingDebt.value.person_name,
+        amount: parseFloat(editingDebt.value.amount),
+        currency: editingDebt.value.currency,
+        description: editingDebt.value.description,
+        due_date: editingDebt.value.due_date,
+    };
+});
 
 const editDebt = (debt: Debt) => {
-    editingDebt.value = {
-        id: debt.id,
-        type: debt.type,
-        personName: debt.personName,
-        amount: debt.amount,
-        description: debt.description,
-        dueDate: debt.dueDate,
-        status: debt.status,
-    };
-    drawerVisible.value = true;
+    editDebtInStore(debt);
 };
 
-const removeDebt = (id: string) => {
-    removeDebtAction(id);
-};
-
-const markAsPaid = (id: string) => {
-    markAsPaidAction(id);
-};
-
-const handleSubmit = (data: DebtFormData) => {
-    if (editingDebt.value && editingDebt.value.id) {
-        updateDebt(editingDebt.value.id, data);
-        editingDebt.value = null;
-    } else {
-        addDebt(data);
+const removeDebtHandler = async (id: string) => {
+    try {
+        await removeDebt(id);
+    } catch (error) {
+        $toast.error('Ошибка', 'Не удалось удалить долг');
     }
-    drawerVisible.value = false;
 };
+
+const markAsPaid = async (id: string) => {
+    try {
+        await markDebtAsPaid(id);
+    } catch (error) {
+        $toast.error('Ошибка', 'Не удалось отметить долг как погашенный');
+    }
+};
+
+const handleSubmitWrapper = async (data: DebtFormData) => {
+    try {
+        await handleSubmitInStore(data);
+    } catch (error) {
+        $toast.error('Ошибка', 'Не удалось сохранить долг');
+    }
+};
+
+const handleDrawerVisibilityChange = (value: boolean) => {
+    if (!value) {
+        debtsStore.closeForm();
+    }
+};
+
+onBeforeMount(async () => {
+    await Promise.all([
+        loadDebts(false),
+        loadDebtBalance()
+    ]);
+});
 
 </script>
 
@@ -311,6 +328,12 @@ const handleSubmit = (data: DebtFormData) => {
         display: flex;
         flex-direction: column;
         gap: 1.2rem;
+    }
+
+    &__loading {
+        display: flex;
+        justify-content: center;
+        padding: 4rem 2rem;
     }
 
     &__footer {

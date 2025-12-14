@@ -7,10 +7,13 @@
         </div>
 
         <div class="limits-page__content">
-            <div v-if="limits.length === 0" class="limits-page__empty">
+            <div v-if="loading" class="limits-page__loading">
+                <ProgressSpinner />
+            </div>
+            <div v-else-if="limits.length === 0" class="limits-page__empty">
                 <div class="limits-page__empty-icon">
                     <VIcon :icon="warning" />
-                </div>ы
+                </div>
                 <p class="limits-page__empty-text">Нет добавленных лимитов</p>
                 <p class="limits-page__empty-hint">Добавьте первый лимит</p>
             </div>
@@ -23,47 +26,68 @@
         <div class="limits-page__footer">
             <Button label="Добавить лимит" fluid :icon="plus" @click="drawerVisible = true" />
         </div>
-        <LimitForm v-model:visible="drawerVisible" :edit-data="editingLimit" @submit="handleSubmit" />
+        <LimitForm v-model:visible="drawerVisible" :edit-data="formEditData" @submit="handleSubmit"
+            @update:visible="handleDrawerVisibilityChange" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, onBeforeMount } from 'vue';
+import { storeToRefs } from 'pinia';
 import { arrowLeft, plus, warning } from '@/assets/icons';
 import router from '@/router/router';
-import { Button } from 'primevue';
+import { Button, ProgressSpinner } from 'primevue';
 import LimitForm from '@/components/Limits/LimitForm.vue';
 import LimitCard from '@/components/Limits/LimitCard.vue';
 import VIcon from '@/components/UI/VIcon.vue';
-import type { LimitFormData } from '@/components/Limits/LimitForm.vue';
-import type { Limit } from '@/composables/Limits/useLimits';
-import { useLimits } from '@/composables/Limits/useLimits';
+import type { LimitFormData } from '@/composables/Limits/types';
+import { useLimitsStore } from '@/store/limitsStore';
+import { useCategoriesStore } from '@/store/categoriesStore';
 
-const drawerVisible = ref(false);
-const editingLimit = ref<Limit | null>(null);
-const { limits, addLimit, removeLimit, updateLimit } = useLimits();
+const limitsStore = useLimitsStore();
+const categoriesStore = useCategoriesStore();
 
-watch(drawerVisible, (value) => {
-    if (!value) {
-        editingLimit.value = null;
-    }
+const { limits, drawerVisible, editingLimit, loading } = storeToRefs(limitsStore);
+const { removeLimit, editLimit, handleSubmit: handleLimitSubmit, closeForm, loadLimits: getLimits } = limitsStore;
+
+const { categories } = storeToRefs(categoriesStore);
+const { loadCategories } = categoriesStore;
+
+const formEditData = computed(() => {
+    if (!editingLimit.value) return null;
+    const category = categories.value.find((cat: any) => cat.id === editingLimit.value?.category_id);
+
+    return {
+        category: category?.name || editingLimit.value.category_name,
+        budget: parseFloat(editingLimit.value.amount) || 0,
+    };
 });
 
-const editLimit = (limit: Limit) => {
-    editingLimit.value = limit;
-    drawerVisible.value = true;
-};
-
-const handleSubmit = (data: LimitFormData) => {
-    if (editingLimit.value) {
-        updateLimit(editingLimit.value.id, data);
-        editingLimit.value = null;
-    } else {
-        addLimit(data);
+const handleDrawerVisibilityChange = (value: boolean) => {
+    if (!value) {
+        closeForm();
     }
-    drawerVisible.value = false;
 };
 
+const handleSubmit = async (formData: LimitFormData | null) => {
+    if (!formData) return;
+
+    const category = categories.value.find((cat: any) => cat.name === formData.category);
+
+    if (!category) {
+        console.error('Категория не найдена');
+        return;
+    }
+
+    await handleLimitSubmit(formData, category.id);
+};
+
+onBeforeMount(async () => {
+    await Promise.all([
+        getLimits(),
+        loadCategories()
+    ]);
+});
 </script>
 
 <style scoped lang="scss">
@@ -147,6 +171,12 @@ const handleSubmit = (data: LimitFormData) => {
         display: flex;
         flex-direction: column;
         gap: 1.2rem;
+    }
+
+    &__loading {
+        display: flex;
+        justify-content: center;
+        padding: 4rem 2rem;
     }
 
     &__footer {

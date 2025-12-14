@@ -19,17 +19,20 @@
                 </div>
 
                 <div class="category-form__form-section">
-                    <div class="category-form__form-info">
-                        <label class="category-form__form-info-label">Видимость категории</label>
-                        <p class="category-form__form-info-text">
-                            Скрытые категории не будут отображаться в списке транзакций
-                        </p>
-                    </div>
-                    <div class="category-form__checkbox-wrapper">
-                        <Checkbox v-model="formData.isHidden" :binary="true" inputId="isHidden" />
-                        <label for="isHidden" class="category-form__checkbox-label">Скрыть категорию</label>
-                    </div>
+                    <VInputText v-model="formData.icon" placeholder="Введите эмодзи или иконку" label="Иконка"
+                        size="small" class="font-14-r" />
                 </div>
+
+                <!-- <div class="category-form__form-section">
+                    <div class="category-form__color-wrapper">
+                        <label class="category-form__form-info-label">Цвет</label>
+                        <div class="category-form__color-input-wrapper">
+                            <input v-model="formData.color" type="color" class="category-form__color-input" />
+                            <VInputText v-model="formData.color" placeholder="#2ECC71" label="" size="small"
+                                class="font-14-r" />
+                        </div>
+                    </div>
+                </div> -->
             </div>
 
             <div class="category-form__footer">
@@ -42,13 +45,14 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Button, Checkbox } from 'primevue';
+import { Button } from 'primevue';
 import VDrawer from '@/components/UI/VDrawer.vue';
 import VForm from '@/components/Form/VForm.vue';
 import VInputText from '@/components/Form/VInputText.vue';
 import VSelect from '@/components/Form/VSelect.vue';
 import type { FormRule } from '@/composables/Form/types';
-import type { CategoryFormData } from '@/composables/Categories/useCategories';
+import type { CategoryFormData } from '@/composables/Categories/types';
+import { CategoryType } from '@/composables/Categories/types';
 
 const props = withDefaults(
     defineProps<{
@@ -70,9 +74,8 @@ const isEditMode = computed(() => !!props.editData);
 const isDefaultCategory = computed(() => props.editData?.isDefault || false);
 
 const typeOptions = [
-    { label: 'Доходы', value: 'income' },
-    { label: 'Расходы', value: 'expense' },
-    { label: 'Долги', value: 'debt' },
+    { label: 'Доходы', value: CategoryType.INCOME },
+    { label: 'Расходы', value: CategoryType.EXPENSE },
 ];
 
 watch(() => props.visible, (newValue) => {
@@ -82,7 +85,7 @@ watch(() => props.visible, (newValue) => {
             name: props.editData.name,
             type: props.editData.type,
             icon: props.editData.icon || '',
-            isHidden: props.editData.isHidden,
+            color: props.editData.color || '#2ECC71',
         };
     } else if (!newValue) {
         resetForm();
@@ -95,7 +98,7 @@ watch(() => props.editData, (newData) => {
             name: newData.name,
             type: newData.type,
             icon: newData.icon || '',
-            isHidden: newData.isHidden,
+            color: newData.color || '#2ECC71',
         };
     }
 });
@@ -110,9 +113,9 @@ const handleVisibilityChange = (value: boolean) => {
 
 const formData = ref<CategoryFormData>({
     name: '',
-    type: 'expense',
+    type: CategoryType.EXPENSE,
     icon: '',
-    isHidden: false,
+    color: '#2ECC71',
 });
 
 const nameRules: FormRule<string>[] = [
@@ -133,9 +136,9 @@ const typeRules: FormRule<string | number>[] = [
 const resetForm = () => {
     formData.value = {
         name: '',
-        type: 'expense',
+        type: CategoryType.EXPENSE,
         icon: '',
-        isHidden: false,
+        color: '#2ECC71',
     };
 };
 
@@ -214,6 +217,27 @@ const handleSubmit = () => {
 
     &__submit {
         width: 100%;
+    }
+
+    &__color-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    &__color-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    &__color-input {
+        width: 5rem;
+        height: 3.6rem;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-s);
+        cursor: pointer;
+        background: transparent;
     }
 }
 </style>

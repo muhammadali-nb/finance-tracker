@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import { formatAmount } from '@/utils';
 
 defineProps<{
   price: number
@@ -10,7 +11,7 @@ const { t } = useI18n();
 
 <template>
   <div class="font-14-r">
-    {{ price.toLocaleString('ru-RU') }}
+    {{ formatAmount(price) }}
     <span> {{ t('currency') }}{{ perMonth ? `/${t('month')}` : '' }}</span>
   </div>
 </template>
@@ -19,6 +20,7 @@ const { t } = useI18n();
 div {
   color: var(--text-color);
 }
+
 span {
   color: var(--secondary-800);
   font-weight: normal;

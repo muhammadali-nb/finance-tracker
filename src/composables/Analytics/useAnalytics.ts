@@ -1,7 +1,12 @@
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import type { EChartsOption } from 'echarts';
+import { MONTHS_SHORT, DAYS_SHORT } from '@/composables/Categories/data';
+import { formatAmountShort, formatDateLabel } from '@/utils';
+import { useAnalyticsStore } from '@/store/analyticsStore';
+import type { Period } from './types';
 
-export type Period = 'day' | 'week' | 'month' | 'year';
+// Экспортируем Period для обратной совместимости
+export type { Period };
 
 export interface StatCard {
     income: number;
@@ -13,6 +18,7 @@ export interface StatCard {
     balanceChange: number;
     averageChange: number;
 }
+
 
 export interface CategoryData {
     name: string;
@@ -26,106 +32,98 @@ export interface LineChartDataPoint {
     value: number;
 }
 
-const formatAmount = (amount: number | undefined | null): string => {
-    if (amount === undefined || amount === null || isNaN(amount)) {
-        return '0';
-    }
-    if (amount >= 1000000) {
-        return `${(amount / 1000000).toFixed(1)}M`;
-    }
-    if (amount >= 1000) {
-        return `${(amount / 1000).toFixed(0)}k`;
-    }
-    return amount.toLocaleString('ru-RU');
-};
-
-// Моковые данные для статистики
-const mockStats: Record<Period, StatCard> = {
-    day: {
-        income: 500000,
-        expense: 150000,
-        balance: 350000,
-        averageExpense: 150000,
-        incomeChange: 12.5,
-        expenseChange: -8.3,
-        balanceChange: 15.2,
-        averageChange: -5.1,
-    },
-    week: {
-        income: 2500000,
-        expense: 1200000,
-        balance: 1300000,
-        averageExpense: 171428,
-        incomeChange: 8.7,
-        expenseChange: -12.4,
-        balanceChange: 22.1,
-        averageChange: -10.2,
-    },
-    month: {
-        income: 10000000,
-        expense: 7500000,
-        balance: 2500000,
-        averageExpense: 250000,
-        incomeChange: 15.3,
-        expenseChange: -5.8,
-        balanceChange: 28.5,
-        averageChange: -3.4,
-    },
-    year: {
-        income: 120000000,
-        expense: 90000000,
-        balance: 30000000,
-        averageExpense: 7500000,
-        incomeChange: 22.1,
-        expenseChange: -8.9,
-        balanceChange: 35.7,
-        averageChange: -6.2,
-    },
-};
-
-// Моковые данные для категорий
-const mockCategoryData = [
-    { name: 'Питание', value: 450000, color: 'rgb(255, 107, 107)' },
-    { name: 'Транспорт', value: 250000, color: 'rgb(74, 144, 226)' },
-    { name: 'Развлечения', value: 300000, color: 'rgb(162, 89, 255)' },
-    { name: 'Покупки', value: 200000, color: 'rgb(46, 213, 115)' },
-    { name: 'Услуги', value: 150000, color: 'rgb(0, 206, 201)' },
-    { name: 'Прочее', value: 100000, color: 'rgb(149, 165, 166)' },
-];
-
-// Моковые данные для линейного графика
-const mockLineData: Record<Period, LineChartDataPoint[]> = {
-    day: Array.from({ length: 24 }, (_, i) => ({
-        time: `${i}:00`,
-        value: Math.floor(Math.random() * 50000) + 100000,
-    })),
-    week: Array.from({ length: 7 }, (_, i) => ({
-        time: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'][i],
-        value: Math.floor(Math.random() * 200000) + 300000,
-    })),
-    month: Array.from({ length: 30 }, (_, i) => ({
-        time: `${i + 1}`,
-        value: Math.floor(Math.random() * 100000) + 200000,
-    })),
-    year: Array.from({ length: 12 }, (_, i) => ({
-        time: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'][i],
-        value: Math.floor(Math.random() * 2000000) + 5000000,
-    })),
-};
 
 export const useAnalytics = () => {
+    const analyticsStore = useAnalyticsStore();
     const selectedPeriod = ref<Period>('month');
     const selectedCategory = ref<string | null>(null);
 
-    const stats = computed(() => mockStats[selectedPeriod.value]);
+    const fetchAnalyticsData = async () => {
+        try {
+            const granularity: 'hour' | 'day' = selectedPeriod.value === 'day' ? 'hour' : 'day';
+            // Используем summary для получения всех данных включая изменения
+            await analyticsStore.loadSummary({
+                period: selectedPeriod.value,
+                type: 'expense',
+                granularity,
+            });
+        } catch (error) {
+            console.error('Failed to fetch analytics data:', error);
+        }
+    };
+
+    onMounted(() => {
+        fetchAnalyticsData();
+    });
+
+    watch(selectedPeriod, () => {
+        fetchAnalyticsData();
+    });
+
+    // Используем summary если доступен, иначе отдельные данные
+    const summaryData = computed(() => analyticsStore.summary);
+    const balanceData = computed(() => summaryData.value?.balance || analyticsStore.balance);
+    const categoriesData = computed(() => summaryData.value?.category_breakdown || analyticsStore.categoryBreakdown);
+    const trendsData = computed(() => {
+        const trends = summaryData.value?.trends || analyticsStore.trends;
+        if (!trends) {
+            return [];
+        }
+        return trends.data.map(point => ({
+            time: formatDateLabel(point.date, selectedPeriod.value),
+            value: parseFloat(point.expense),
+        }));
+    });
+    const incomeTrend = computed(() => summaryData.value?.income_trend);
+    const expenseTrend = computed(() => summaryData.value?.expense_trend);
+
+    const loading = computed(() => analyticsStore.loading);
+
+    const stats = computed<StatCard>(() => {
+        if (!balanceData.value) {
+            return {
+                income: 0,
+                expense: 0,
+                balance: 0,
+                averageExpense: 0,
+                incomeChange: 0,
+                expenseChange: 0,
+                balanceChange: 0,
+                averageChange: 0,
+            };
+        }
+
+        const totalExpense = parseFloat(balanceData.value.total_expense);
+        const dataPoints = trendsData.value.length || 1;
+
+        const incomeChange = incomeTrend.value?.change_percentage || 0;
+        const expenseChange = expenseTrend.value?.change_percentage || 0;
+        // Для balanceChange используем разницу между текущим и предыдущим балансом
+        const balanceChange = incomeChange - expenseChange; // Упрощенный расчет
+        const averageChange = 0; // Не приходит с бэкенда
+
+        return {
+            income: parseFloat(balanceData.value.total_income),
+            expense: totalExpense,
+            balance: parseFloat(balanceData.value.balance),
+            averageExpense: totalExpense / dataPoints,
+            incomeChange,
+            expenseChange,
+            balanceChange,
+            averageChange,
+        };
+    });
 
     const categoryData = computed<CategoryData[]>(() => {
-        const total = mockCategoryData.reduce((sum, item) => sum + item.value, 0);
-        return mockCategoryData.map((item) => ({
-            name: item.name,
-            value: item.value,
-            percentage: ((item.value / total) * 100).toFixed(1),
-            color: item.color,
+        if (!categoriesData.value) {
+            return [];
+        }
+
+        return categoriesData.value.categories.map((cat) => ({
+            name: cat.category_name,
+            value: parseFloat(cat.amount),
+            percentage: cat.percentage.toString(),
+            color: cat.color || 'rgb(149, 165, 166)',
         }));
     });
 
@@ -135,10 +133,10 @@ export const useAnalytics = () => {
             .slice(0, 5);
     });
 
-    const lineChartData = computed(() => mockLineData[selectedPeriod.value]);
+    const lineChartData = computed(() => trendsData.value);
 
     const getCategoryAmount = (categoryName: string): number => {
-        const category = mockCategoryData.find(c => c.name === categoryName);
+        const category = categoryData.value.find(c => c.name === categoryName);
         return category?.value || 0;
     };
 
@@ -161,7 +159,7 @@ export const useAnalytics = () => {
             },
             formatter: (params: any) => {
                 const param = Array.isArray(params) ? params[0] : params;
-                return `${param.name}<br/>${formatAmount(param.value)} UZS`;
+                return `${param.name}<br/>${formatAmountShort(param.value)} UZS`;
             },
         },
         grid: {
@@ -201,7 +199,7 @@ export const useAnalytics = () => {
             axisLabel: {
                 color: 'var(--primary-500)',
                 fontSize: 12,
-                formatter: (value: number) => formatAmount(value),
+                formatter: (value: number) => formatAmountShort(value),
             },
         },
         series: [
@@ -271,7 +269,7 @@ export const useAnalytics = () => {
                 labelLine: {
                     show: false,
                 },
-                data: mockCategoryData.map((item) => ({
+                data: categoryData.value.map((item) => ({
                     value: item.value,
                     name: item.name,
                     itemStyle: {
@@ -301,7 +299,7 @@ export const useAnalytics = () => {
             },
             formatter: (params: any) => {
                 const param = Array.isArray(params) ? params[0] : params;
-                return `${param.name}<br/>Средний: ${formatAmount(param.value)} UZS`;
+                return `${param.name}<br/>Средний: ${formatAmountShort(param.value)} UZS`;
             },
         },
         grid: {
@@ -341,7 +339,7 @@ export const useAnalytics = () => {
             axisLabel: {
                 color: 'var(--primary-500)',
                 fontSize: 12,
-                formatter: (value: number) => formatAmount(value),
+                formatter: (value: number) => formatAmountShort(value),
             },
         },
         series: [
@@ -393,6 +391,7 @@ export const useAnalytics = () => {
     return {
         selectedPeriod,
         selectedCategory,
+        loading,
         stats,
         categoryData,
         topCategories,
@@ -400,7 +399,7 @@ export const useAnalytics = () => {
         lineChartOption,
         pieChartOption,
         trendChartOption,
-        formatAmount,
+        formatAmount: formatAmountShort,
         getCategoryAmount,
         selectCategory,
     };
