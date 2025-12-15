@@ -2,14 +2,12 @@ import * as process from 'node:process';
 import { fileURLToPath, URL } from 'node:url';
 import vue from '@vitejs/plugin-vue';
 import { defineConfig, loadEnv } from 'vite';
-import mkcert from 'vite-plugin-mkcert';
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [
       vue(),
-      ...(mode === 'development' ? [mkcert()] : []),
       {
         name: 'token-mw',
         configureServer(server) {
@@ -25,7 +23,7 @@ export default defineConfig(({ mode }) => {
               });
               const result = await response.json();
               res.setHeader('Content-Type', 'application/json');
-              res.setHeader('Set-Cookie', [`token=${result.token}; Path=/; SameSite=Strict; Secure`]);
+              res.setHeader('Set-Cookie', [`token=${result.token}; Path=/; SameSite=Strict`]);
               res.end(JSON.stringify({ success: true }));
             }
 
@@ -42,11 +40,7 @@ export default defineConfig(({ mode }) => {
       open: true,
       port: 1234,
       strictPort: true,
-      hmr: mode === 'development' ? {
-        protocol: 'wss',
-        host: 'localhost',
-        port: 1234,
-      } : {
+      hmr: {
         host: 'localhost',
         port: 1234,
       },

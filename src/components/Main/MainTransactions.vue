@@ -6,6 +6,7 @@ import { Button } from 'primevue';
 import TransactionCard from '@/components/Transactions/TransactionCard.vue';
 import { useTransactionsStore } from '@/store/transactionsStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
+import { getStartOfDayString } from '@/utils';
 
 const router = useRouter();
 const transactionsStore = useTransactionsStore();
@@ -27,9 +28,8 @@ const handleViewAll = () => {
 
 onBeforeMount(async () => {
     // Загружаем только транзакции за сегодня (один день)
-    const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+    // Используем формат YYYY-MM-DD для избежания проблем с часовыми поясами
+    const todayDateString = getStartOfDayString();
 
     // Сохраняем старые фильтры, чтобы восстановить их после загрузки (если нужно)
     const oldFilters = transactionsStore.currentFilters;
@@ -37,8 +37,8 @@ onBeforeMount(async () => {
     await Promise.all([
         loadCategories(),
         loadTransactions({
-            start_date: startOfDay.toISOString(),
-            end_date: endOfDay.toISOString(),
+            start_date: todayDateString,
+            end_date: todayDateString,
             page_size: 10, // Ограничиваем количество для главной страницы
         }, false, true) // force = true, чтобы всегда загружать свежие данные для главной страницы
     ]);

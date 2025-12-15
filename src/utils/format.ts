@@ -112,6 +112,44 @@ export const formatDateTime = (dateString: string | null | undefined): string =>
 };
 
 /**
+ * Форматирует дату в формат YYYY-MM-DD (без времени)
+ * Используется для API запросов, чтобы избежать проблем с часовыми поясами
+ * @param date - объект Date или строка с датой
+ * @returns Строка в формате YYYY-MM-DD
+ */
+export const formatDateToAPI = (date: Date | string): string => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+
+    if (isNaN(dateObj.getTime())) {
+        throw new Error('Invalid date');
+    }
+
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+};
+
+/**
+ * Получает дату начала дня в формате YYYY-MM-DD
+ * @param date - объект Date (по умолчанию сегодня)
+ * @returns Строка в формате YYYY-MM-DD
+ */
+export const getStartOfDayString = (date: Date = new Date()): string => {
+    return formatDateToAPI(date);
+};
+
+/**
+ * Получает дату конца дня в формате YYYY-MM-DD
+ * @param date - объект Date (по умолчанию сегодня)
+ * @returns Строка в формате YYYY-MM-DD
+ */
+export const getEndOfDayString = (date: Date = new Date()): string => {
+    return formatDateToAPI(date);
+};
+
+/**
  * Форматирует дату для меток графиков в зависимости от периода
  * @param dateStr - строка с датой в формате "2024-12-14"
  * @param period - период (day, week, month, year)

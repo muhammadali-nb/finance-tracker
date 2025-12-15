@@ -1,5 +1,5 @@
 import type { Transaction, TransactionGroup } from '../types';
-import { formatDate } from '@/utils';
+import { formatDate, formatDateToAPI } from '@/utils';
 import { MONTHS_FULL, DAYS_SHORT } from '@/composables/Categories/data';
 
 /**
@@ -10,7 +10,8 @@ export const groupTransactionsByDay = (transactions: Transaction[]): Transaction
 
     transactions.forEach(transaction => {
         const date = new Date(transaction.transaction_date);
-        const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+        // Используем локальное форматирование даты для избежания проблем с часовыми поясами
+        const dateKey = formatDateToAPI(date);
 
         if (!groupsMap.has(dateKey)) {
             groupsMap.set(dateKey, []);
