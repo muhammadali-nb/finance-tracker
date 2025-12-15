@@ -1,40 +1,40 @@
 <template>
     <VDrawer v-model:visible="localVisible" @update:visible="handleVisibilityChange">
         <template #header>
-            <h2 class="limit-form__title">{{ isEditMode ? 'Редактировать лимит' : 'Добавить лимит' }}</h2>
+            <h2 class="limit-form__title">{{ isEditMode ? t('limits.editLimit') : t('limits.addLimit') }}</h2>
         </template>
 
         <VForm @submit-form="handleSubmit" class="limit-form__form-wrapper">
             <div class="limit-form__form">
                 <div class="limit-form__form-section">
                     <VSelect v-model="formData.category" :options="categoriesOptions" option-label="name"
-                        option-value="name" placeholder="Выберите категорию для лимита" label="Категория"
+                        option-value="name" :placeholder="t('limits.selectCategory')" :label="t('limits.category')"
                         :rules="categoryRules" size="small" class="font-14-r" />
                 </div>
 
                 <div class="limit-form__form-section">
                     <VInputNumber v-model="formData.budget" class="font-14-r" :min="0" :max-fraction-digits="0"
-                        suffix=" UZS" placeholder="0" label="Месячный бюджет" :rules="budgetRules" />
+                        suffix=" UZS" placeholder="0" :label="t('limits.monthlyBudget')" :rules="budgetRules" />
                 </div>
 
                 <div class="limit-form__form-section">
                     <div class="limit-form__form-info">
-                        <label class="limit-form__form-info-label">Период бюджета</label>
+                        <label class="limit-form__form-info-label">{{ t('limits.budgetPeriod') }}</label>
                         <p class="limit-form__form-info-text">
-                            Этот бюджет будет применяться к текущему месяцу ({{ currentMonth }})
+                            {{ t('limits.budgetPeriodHint', { month: currentMonth }) }}
                         </p>
                     </div>
                 </div>
 
                 <div class="limit-form__form-section">
                     <p class="limit-form__form-hint">
-                        Установите лимит расходов и нажмите "Сохранить лимит" ниже для начала отслеживания.
+                        {{ t('limits.budgetHint') }}
                     </p>
                 </div>
             </div>
 
             <div class="limit-form__footer">
-                <Button :label="isEditMode ? 'Сохранить изменения' : 'Сохранить лимит'" type="submit" fluid
+                <Button :label="isEditMode ? t('limits.saveChanges') : t('limits.saveLimit')" type="submit" fluid
                     severity="primary" class="limit-form__submit" />
             </div>
         </VForm>
@@ -44,6 +44,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useI18n } from 'vue-i18n';
 import { Button } from 'primevue';
 import VDrawer from '@/components/UI/VDrawer.vue';
 import VForm from '@/components/Form/VForm.vue';
@@ -52,7 +53,8 @@ import VSelect from '@/components/Form/VSelect.vue';
 import type { FormRule } from '@/composables/Form/types';
 import type { LimitFormData } from '@/composables/Limits/types';
 import { useCategoriesStore } from '@/store/categoriesStore';
-import { CategoryType } from '@/composables/Categories/types';
+
+const { t } = useI18n();
 
 
 const props = withDefaults(
@@ -114,7 +116,8 @@ const formData = ref<LimitFormData>({
     budget: 0,
 });
 
-import { MONTHS_FULL } from '@/composables/Categories/data';
+import { MONTHS_FULL } from '@/composables/data';
+import { CategoryType } from '@/composables/Categories/types';
 
 const currentMonth = computed(() => {
     const date = new Date();
@@ -123,14 +126,14 @@ const currentMonth = computed(() => {
 
 const categoryRules: FormRule<string | number | undefined>[] = [
     (value) => {
-        if (!value) return 'Выберите категорию';
+        if (!value) return t('limits.selectCategoryError');
         return true;
     },
 ];
 
 const budgetRules: FormRule<number>[] = [
     (value) => {
-        if (!value || value <= 0) return 'Введите сумму больше 0';
+        if (!value || value <= 0) return t('limits.amountGreaterThanZero');
         return true;
     },
 ];

@@ -9,9 +9,9 @@
             <div class="category-card__info">
                 <h3 class="category-card__name">{{ category.name }}</h3>
                 <div class="category-card__meta">
-                    <span class="category-card__type">{{ category.type === CategoryType.INCOME ? 'Доходы' : 'Расходы'
+                    <span class="category-card__type">{{ category.type === CategoryType.INCOME ? t('main.income') : t('main.expense')
                     }}</span>
-                    <span v-if="category.is_default" class="category-card__badge">По умолчанию</span>
+                    <span v-if="category.is_default" class="category-card__badge">{{ t('categories.default') }}</span>
                 </div>
             </div>
         </div>
@@ -24,11 +24,14 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button, TieredMenu } from 'primevue';
 import type { MenuItem } from 'primevue/menuitem';
 import type { Category } from '@/composables/Categories/types';
 import { CategoryType } from '@/composables/Categories/types';
 import { menuDots } from '@/assets/icons';
+
+const { t } = useI18n();
 
 const props = defineProps<{
     category: Category;
@@ -56,13 +59,13 @@ const toggleMenu = (event: Event) => {
 
 const menuItems = computed<MenuItem[]>(() => [
     {
-        label: 'Редактировать',
+        label: t('common.edit'),
         command: () => {
             emit('edit');
         },
     },
     {
-        label: 'Удалить',
+        label: t('common.delete'),
         command: () => {
             emit('remove');
         },

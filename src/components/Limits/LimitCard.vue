@@ -11,7 +11,7 @@
         </div>
 
         <div class="limit-card__progress">
-            <ProgressBar :value="progressPercentage" />
+            <ProgressBar :value="progressPercentage" :show-value="false" />
         </div>
 
         <div class="limit-card__content">
@@ -26,12 +26,15 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button, ProgressBar, TieredMenu } from 'primevue';
 import type { MenuItem } from 'primevue/menuitem';
 import { menuDots } from '@/assets/icons';
 import type { Limit } from '@/composables/Limits/types';
-import { MONTHS_FULL } from '@/composables/Categories/data';
 import { formatAmount } from '@/utils';
+import { MONTHS_FULL } from '@/composables/data';
+
+const { t } = useI18n();
 
 const props = defineProps<{
     limit: Limit;
@@ -50,13 +53,13 @@ const toggleMenu = (event: Event) => {
 
 const menuItems = computed<MenuItem[]>(() => [
     {
-        label: 'Редактировать',
+        label: t('common.edit'),
         command: () => {
             emit('edit');
         },
     },
     {
-        label: 'Удалить',
+        label: t('common.delete'),
         command: () => {
             emit('remove');
         },
@@ -64,7 +67,7 @@ const menuItems = computed<MenuItem[]>(() => [
 ]);
 
 const categoryName = computed(() => {
-    return props.limit.category_name || 'Не выбрано';
+    return props.limit.category_name || t('limits.notSelected');
 });
 
 const formattedBudget = computed(() => {

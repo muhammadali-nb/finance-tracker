@@ -1,48 +1,50 @@
 <template>
     <VDrawer v-model:visible="localVisible" @update:visible="handleVisibilityChange">
         <template #header>
-            <h2 class="transaction-filter-form__title">Фильтры транзакций</h2>
+            <h2 class="transaction-filter-form__title">{{ t('filters.transactionFilters') }}</h2>
         </template>
 
         <VForm @submit-form="handleSubmit" class="transaction-filter-form__form-wrapper">
             <div class="transaction-filter-form__form">
                 <div class="transaction-filter-form__form-section">
                     <VSelect v-model="formData.type" :options="typeOptions" option-label="label" option-value="value"
-                        placeholder="Все типы" label="Тип транзакции" size="small" class="font-14-r" />
+                        :placeholder="t('filters.allTypes')" :label="t('transactions.typeLabel')" size="small"
+                        class="font-14-r" />
                 </div>
 
                 <div class="transaction-filter-form__form-section">
                     <VSelect v-model="formData.category_id" :options="categoriesOptions" option-label="name"
-                        option-value="id" placeholder="Все категории" label="Категория" size="small"
-                        class="font-14-r" />
+                        option-value="id" :placeholder="t('filters.allCategories')" :label="t('filters.category')"
+                        size="small" class="font-14-r" />
                 </div>
 
                 <div class="transaction-filter-form__form-section">
                     <VSelect v-model="formData.currency" :options="currencyOptions" option-label="label"
-                        option-value="value" placeholder="Все валюты" label="Валюта" size="small" class="font-14-r" />
+                        option-value="value" :placeholder="t('filters.allCurrencies')" :label="t('debts.currency')"
+                        size="small" class="font-14-r" />
                 </div>
 
                 <div class="transaction-filter-form__form-section">
-                    <VInputText v-model="formData.start_date" type="date" label="Дата начала" size="small"
+                    <VInputText v-model="formData.start_date" type="date" :label="t('filters.startDate')" size="small"
                         class="font-14-r" />
                 </div>
 
                 <div class="transaction-filter-form__form-section">
-                    <VInputText v-model="formData.end_date" type="date" label="Дата окончания" size="small"
+                    <VInputText v-model="formData.end_date" type="date" :label="t('filters.endDate')" size="small"
                         class="font-14-r" />
                 </div>
 
                 <div class="transaction-filter-form__form-section">
-                    <VInputText v-model="formData.search" placeholder="Поиск по описанию" label="Поиск" size="small"
-                        class="font-14-r" />
+                    <VInputText v-model="formData.search" :placeholder="t('filters.searchByDescription')"
+                        :label="t('filters.search')" size="small" class="font-14-r" />
                 </div>
             </div>
 
             <div class="transaction-filter-form__footer">
                 <div class="transaction-filter-form__buttons">
-                    <Button label="Сбросить" severity="secondary" outlined fluid @click="handleReset"
+                    <Button :label="t('filters.reset')" severity="secondary" outlined fluid @click="handleReset"
                         class="transaction-filter-form__button" />
-                    <Button label="Применить" type="submit" fluid severity="primary"
+                    <Button :label="t('filters.apply')" type="submit" fluid severity="primary"
                         class="transaction-filter-form__button" />
                 </div>
             </div>
@@ -53,6 +55,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useI18n } from 'vue-i18n';
 import { Button } from 'primevue';
 import VDrawer from '@/components/UI/VDrawer.vue';
 import VForm from '@/components/Form/VForm.vue';
@@ -60,6 +63,25 @@ import VInputText from '@/components/Form/VInputText.vue';
 import VSelect from '@/components/Form/VSelect.vue';
 import type { GetTransactionsParams } from '@/composables/Transactions/types';
 import { useCategoriesStore } from '@/store/categoriesStore';
+import { formatDateToAPIDatetime } from '@/utils';
+
+const { t } = useI18n();
+
+/**
+ * Преобразует datetime в формат даты для input type="date" (YYYY-MM-DD)
+ * @param datetimeString - строка с датой в формате YYYY-MM-DDTHH:mm:ss или YYYY-MM-DD
+ * @returns Строка в формате YYYY-MM-DD
+ */
+const formatDatetimeToDate = (datetimeString: string): string => {
+    if (!datetimeString) {
+        return '';
+    }
+    // Если строка содержит T, берем только часть до T
+    if (datetimeString.includes('T')) {
+        return datetimeString.split('T')[0];
+    }
+    return datetimeString;
+};
 
 const props = defineProps<{
     visible: boolean;
@@ -76,31 +98,31 @@ const { categories } = storeToRefs(useCategoriesStore());
 
 const localVisible = ref(props.visible);
 
-const typeOptions = [
-    { label: 'Все типы', value: '' },
-    { label: 'Доходы', value: 'income' },
-    { label: 'Расходы', value: 'expense' },
-];
+const typeOptions = computed(() => [
+    { label: t('filters.allTypes'), value: '' },
+    { label: t('transactions.income'), value: 'income' },
+    { label: t('transactions.expense'), value: 'expense' },
+]);
 
-const currencyOptions = [
-    { label: 'Все валюты', value: '' },
+const currencyOptions = computed(() => [
+    { label: t('filters.allCurrencies'), value: '' },
     { label: 'UZS', value: 'uzs' },
     { label: 'USD', value: 'usd' },
     { label: 'EUR', value: 'eur' },
     { label: 'RUB', value: 'rub' },
-];
+]);
 
 const categoriesOptions = computed(() => {
-    return [{ id: '', name: 'Все категории' }, ...categories.value];
+    return [{ id: '', name: t('filters.allCategories') }, ...categories.value];
 });
 
 const formData = ref<{
-    type?: string;
-    category_id?: string;
-    currency?: string;
-    start_date?: string;
-    end_date?: string;
-    search?: string;
+    type: string;
+    category_id: string;
+    currency: string;
+    start_date: string;
+    end_date: string;
+    search: string;
 }>({
     type: '',
     category_id: '',
@@ -117,8 +139,8 @@ watch(() => props.visible, (newValue) => {
             type: props.currentFilters.type || '',
             category_id: props.currentFilters.category_id || '',
             currency: props.currentFilters.currency || '',
-            start_date: props.currentFilters.start_date || '',
-            end_date: props.currentFilters.end_date || '',
+            start_date: formatDatetimeToDate(props.currentFilters.start_date || ''),
+            end_date: formatDatetimeToDate(props.currentFilters.end_date || ''),
             search: props.currentFilters.search || '',
         };
     } else if (!newValue) {
@@ -132,8 +154,8 @@ watch(() => props.currentFilters, (newFilters) => {
             type: newFilters.type || '',
             category_id: newFilters.category_id || '',
             currency: newFilters.currency || '',
-            start_date: newFilters.start_date || '',
-            end_date: newFilters.end_date || '',
+            start_date: formatDatetimeToDate(newFilters.start_date || ''),
+            end_date: formatDatetimeToDate(newFilters.end_date || ''),
             search: newFilters.search || '',
         };
     }
@@ -178,10 +200,12 @@ const handleSubmit = () => {
         filters.currency = formData.value.currency as 'uzs' | 'usd' | 'eur' | 'rub';
     }
     if (formData.value.start_date && formData.value.start_date.trim() !== '') {
-        filters.start_date = formData.value.start_date;
+        // Преобразуем дату в формат datetime для API (T00:00:00 для начала дня)
+        filters.start_date = formatDateToAPIDatetime(formData.value.start_date, false);
     }
     if (formData.value.end_date && formData.value.end_date.trim() !== '') {
-        filters.end_date = formData.value.end_date;
+        // Преобразуем дату в формат datetime для API (T23:59:59 для конца дня)
+        filters.end_date = formatDateToAPIDatetime(formData.value.end_date, true);
     }
     if (formData.value.search && formData.value.search.trim() !== '') {
         filters.search = formData.value.search;

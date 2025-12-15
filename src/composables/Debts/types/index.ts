@@ -6,7 +6,7 @@ export enum DebtType {
 export enum DebtStatus {
     OPEN = 'open',
     OVERDUE = 'overdue',
-    PAID = 'paid',
+    PAID = 'settled',
 }
 
 export interface Debt {

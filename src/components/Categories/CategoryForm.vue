@@ -1,7 +1,7 @@
 <template>
     <VDrawer v-model:visible="localVisible" @update:visible="handleVisibilityChange">
         <template #header>
-            <h2 class="category-form__title">{{ isEditMode ? 'Редактировать категорию' : 'Добавить категорию' }}</h2>
+            <h2 class="category-form__title">{{ isEditMode ? t('categories.editCategory') : t('categories.addCategory') }}</h2>
         </template>
 
         <VForm @submit-form="handleSubmit" class="category-form__form-wrapper">
@@ -9,17 +9,17 @@
             <div class="category-form__form">
                 <div class="category-form__form-section">
                     <VSelect v-model="formData.type" :options="typeOptions" option-label="label" option-value="value"
-                        placeholder="Выберите тип категории" label="Тип категории" :rules="typeRules" size="small"
+                        :placeholder="t('categories.selectCategoryType')" :label="t('categories.type')" :rules="typeRules" size="small"
                         class="font-14-r" :disabled="isEditMode && isDefaultCategory" />
                 </div>
 
                 <div class="category-form__form-section">
-                    <VInputText v-model="formData.name" placeholder="Введите название категории" label="Название"
+                    <VInputText v-model="formData.name" :placeholder="t('categories.enterCategoryName')" :label="t('categories.name')"
                         :rules="nameRules" size="small" class="font-14-r" />
                 </div>
 
                 <div class="category-form__form-section">
-                    <VInputText v-model="formData.icon" placeholder="Введите эмодзи или иконку" label="Иконка"
+                    <VInputText v-model="formData.icon" :placeholder="t('categories.enterIcon')" :label="t('categories.icon')"
                         size="small" class="font-14-r" />
                 </div>
 
@@ -36,7 +36,7 @@
             </div>
 
             <div class="category-form__footer">
-                <Button :label="isEditMode ? 'Сохранить изменения' : 'Сохранить категорию'" type="submit" fluid
+                <Button :label="isEditMode ? t('common.save') : t('categories.saveCategory')" type="submit" fluid
                     severity="primary" class="category-form__submit" />
             </div>
         </VForm>
@@ -45,6 +45,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button } from 'primevue';
 import VDrawer from '@/components/UI/VDrawer.vue';
 import VForm from '@/components/Form/VForm.vue';
@@ -53,6 +54,8 @@ import VSelect from '@/components/Form/VSelect.vue';
 import type { FormRule } from '@/composables/Form/types';
 import type { CategoryFormData } from '@/composables/Categories/types';
 import { CategoryType } from '@/composables/Categories/types';
+
+const { t } = useI18n();
 
 const props = withDefaults(
     defineProps<{
@@ -73,10 +76,10 @@ const localVisible = ref(props.visible);
 const isEditMode = computed(() => !!props.editData);
 const isDefaultCategory = computed(() => props.editData?.isDefault || false);
 
-const typeOptions = [
-    { label: 'Доходы', value: CategoryType.INCOME },
-    { label: 'Расходы', value: CategoryType.EXPENSE },
-];
+const typeOptions = computed(() => [
+    { label: t('transactions.income'), value: CategoryType.INCOME },
+    { label: t('transactions.expense'), value: CategoryType.EXPENSE },
+]);
 
 watch(() => props.visible, (newValue) => {
     localVisible.value = newValue;
@@ -120,15 +123,15 @@ const formData = ref<CategoryFormData>({
 
 const nameRules: FormRule<string>[] = [
     (value) => {
-        if (!value || value.trim().length === 0) return 'Введите название категории';
-        if (value.trim().length < 2) return 'Название должно содержать минимум 2 символа';
+        if (!value || value.trim().length === 0) return t('categories.enterCategoryNameError');
+        if (value.trim().length < 2) return t('categories.categoryNameMinLength');
         return true;
     },
 ];
 
 const typeRules: FormRule<string | number>[] = [
     (value) => {
-        if (!value) return 'Выберите тип категории';
+        if (!value) return t('categories.selectCategoryType');
         return true;
     },
 ];

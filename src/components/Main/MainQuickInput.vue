@@ -1,14 +1,14 @@
 <template>
     <div class="main-quick-input">
         <div class="main-quick-input__card">
-            <h5 class="main-quick-input__title">Быстрый ввод</h5>
+            <h5 class="main-quick-input__title">{{ t('main.quickInput') }}</h5>
             <div class="main-quick-input__buttons">
-                <Button :icon="microphoneIcon" severity="primary" text fluid label="Голосовой ввод"
+                <Button :icon="microphoneIcon" severity="primary" text fluid :label="t('main.voiceInput')"
                     class="main-quick-input__button" @click="handleVoiceInput" />
-                <Button :icon="cameraIcon" severity="primary" text fluid label="Фото ввод"
+                <Button :icon="cameraIcon" severity="primary" text fluid :label="t('main.photoInput')"
                     class="main-quick-input__button" @click="handlePhotoInput" />
             </div>
-            <InputText v-model="quickInputText" placeholder="Напишите расходы" class="main-quick-input__field"
+            <InputText v-model="quickInputText" :placeholder="t('main.writeExpenses')" class="main-quick-input__field"
                 @keyup.enter="handleTextInput" fluid />
         </div>
     </div>
@@ -16,8 +16,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button, InputText } from 'primevue';
 import { microphone, camera } from '@/assets/icons';
+
+const { t } = useI18n();
 
 const quickInputText = ref('');
 const microphoneIcon = microphone;

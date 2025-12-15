@@ -2,7 +2,7 @@
     <div class="limits-page">
         <div class="limits-page__header">
             <Button :icon="arrowLeft" severity="secondary" @click="router.back()" class="limits-page__header-button" />
-            <h1 class="gold-text">Лимиты</h1>
+            <h1 class="gold-text">{{ t('limits.title') }}</h1>
             <div class="limits-page__header-empty" />
         </div>
 
@@ -14,17 +14,17 @@
                 <div class="limits-page__empty-icon">
                     <VIcon :icon="warning" />
                 </div>
-                <p class="limits-page__empty-text">Нет добавленных лимитов</p>
-                <p class="limits-page__empty-hint">Добавьте первый лимит</p>
+                <p class="limits-page__empty-text">{{ t('limits.noLimits') }}</p>
+                <p class="limits-page__empty-hint">{{ t('limits.addFirst') }}</p>
             </div>
             <div v-else class="limits-page__list">
-                <LimitCard v-for="limit in limits" :key="limit.id" :limit="limit" @remove="removeLimit(limit.id)"
+                <LimitCard v-for="limit in sortedLimits" :key="limit.id" :limit="limit" @remove="removeLimit(limit.id)"
                     @edit="editLimit(limit)" />
             </div>
         </div>
 
         <div class="limits-page__footer">
-            <Button label="Добавить лимит" fluid :icon="plus" @click="drawerVisible = true" />
+            <Button :label="t('limits.addLimit')" fluid :icon="plus" @click="drawerVisible = true" />
         </div>
         <LimitForm v-model:visible="drawerVisible" :edit-data="formEditData" @submit="handleSubmit"
             @update:visible="handleDrawerVisibilityChange" />
@@ -32,26 +32,80 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeMount } from 'vue';
+import { computed, ref, onBeforeMount } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useI18n } from 'vue-i18n';
 import { arrowLeft, plus, warning } from '@/assets/icons';
 import router from '@/router/router';
 import { Button, ProgressSpinner } from 'primevue';
+
+const { t } = useI18n();
 import LimitForm from '@/components/Limits/LimitForm.vue';
 import LimitCard from '@/components/Limits/LimitCard.vue';
 import VIcon from '@/components/UI/VIcon.vue';
-import type { LimitFormData } from '@/composables/Limits/types';
-import { useLimitsStore } from '@/store/limitsStore';
+import type { Limit, LimitFormData, LimitCreateData, LimitUpdateData } from '@/composables/Limits/types';
+import { useLimitsRequests } from '@/composables/Limits/requests';
 import { useCategoriesStore } from '@/store/categoriesStore';
 
-const limitsStore = useLimitsStore();
+const { getLimits: fetchLimits, addLimit: addLimitRequest, removeLimit: removeLimitRequest, updateLimit: updateLimitRequest } = useLimitsRequests();
 const categoriesStore = useCategoriesStore();
-
-const { limits, drawerVisible, editingLimit, loading } = storeToRefs(limitsStore);
-const { removeLimit, editLimit, handleSubmit: handleLimitSubmit, closeForm, loadLimits: getLimits } = limitsStore;
-
 const { categories } = storeToRefs(categoriesStore);
 const { loadCategories } = categoriesStore;
+
+const limits = ref<Limit[]>([]);
+const drawerVisible = ref(false);
+const editingLimit = ref<Limit | null>(null);
+const loading = ref(false);
+
+const sortedLimits = computed(() => {
+    return [...limits.value].sort((a, b) => {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return dateB - dateA;
+    });
+});
+
+const convertFormDataToCreateData = (formData: LimitFormData, categoryId: string): LimitCreateData => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    const periodStart = new Date(year, month, 1);
+    const periodEnd = new Date(year, month + 1, 0);
+
+    return {
+        category_id: categoryId,
+        amount: formData.budget,
+        period_start: periodStart.toISOString().split('T')[0],
+        period_end: periodEnd.toISOString().split('T')[0],
+    };
+};
+
+const convertFormDataToUpdateData = (formData: LimitFormData): LimitUpdateData => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    const periodStart = new Date(year, month, 1);
+    const periodEnd = new Date(year, month + 1, 0);
+
+    return {
+        amount: formData.budget,
+        period_start: periodStart.toISOString().split('T')[0],
+        period_end: periodEnd.toISOString().split('T')[0],
+    };
+};
+
+const loadLimits = async () => {
+    try {
+        loading.value = true;
+        limits.value = await fetchLimits();
+    } catch (error) {
+        console.error('Failed to load limits:', error);
+    } finally {
+        loading.value = false;
+    }
+};
 
 const formEditData = computed(() => {
     if (!editingLimit.value) return null;
@@ -63,9 +117,27 @@ const formEditData = computed(() => {
     };
 });
 
+const editLimit = (limit: Limit) => {
+    editingLimit.value = limit;
+    drawerVisible.value = true;
+};
+
+const removeLimit = async (id: string) => {
+    try {
+        loading.value = true;
+        await removeLimitRequest(id);
+        limits.value = limits.value.filter(limit => limit.id !== id);
+    } catch (error) {
+        console.error('Failed to delete limit:', error);
+    } finally {
+        loading.value = false;
+    }
+};
+
 const handleDrawerVisibilityChange = (value: boolean) => {
     if (!value) {
-        closeForm();
+        drawerVisible.value = false;
+        editingLimit.value = null;
     }
 };
 
@@ -75,16 +147,32 @@ const handleSubmit = async (formData: LimitFormData | null) => {
     const category = categories.value.find((cat: any) => cat.name === formData.category);
 
     if (!category) {
-        console.error('Категория не найдена');
+        console.error(t('limits.categoryNotFound'));
         return;
     }
 
-    await handleLimitSubmit(formData, category.id);
+    try {
+        loading.value = true;
+        if (editingLimit.value) {
+            const updateData = convertFormDataToUpdateData(formData);
+            await updateLimitRequest(editingLimit.value.id, updateData);
+            editingLimit.value = null;
+        } else {
+            const createData = convertFormDataToCreateData(formData, category.id);
+            await addLimitRequest(createData);
+        }
+        drawerVisible.value = false;
+        await loadLimits();
+    } catch (error) {
+        console.error('Failed to save limit:', error);
+    } finally {
+        loading.value = false;
+    }
 };
 
 onBeforeMount(async () => {
     await Promise.all([
-        getLimits(),
+        loadLimits(),
         loadCategories()
     ]);
 });

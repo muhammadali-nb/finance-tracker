@@ -5,8 +5,8 @@ import { ADD_FORM_VALIDATION_RULE, IS_VALIDATED } from './types';
 export const useFormField = <MODEL_VALUE_TYPE extends string | number, FIELD_PROPS>(props: IFormField<MODEL_VALUE_TYPE> & FIELD_PROPS & { mask?: string }, emit: IEmits<MODEL_VALUE_TYPE>) => {
   let removeValidationRule: () => boolean;
   const id = useId();
-  const isValidated = inject(IS_VALIDATED);
-  const addValidationToForm = inject(ADD_FORM_VALIDATION_RULE);
+  const isValidated = inject(IS_VALIDATED, ref(false));
+  const addValidationToForm = inject(ADD_FORM_VALIDATION_RULE, undefined);
 
   const isMaskFieldCorrect = ref(true);
   const val = computed<MODEL_VALUE_TYPE | undefined>({
@@ -33,10 +33,10 @@ export const useFormField = <MODEL_VALUE_TYPE extends string | number, FIELD_PRO
     return '';
   });
 
-  const fieldValid = computed(() => !isValidated?.value || !errorMessage.value);
+  const fieldValid = computed(() => !isValidated.value || !errorMessage.value);
 
   onBeforeMount(() => {
-    if (!props.rules || typeof addValidationToForm === 'undefined') return;
+    if (!props.rules || !addValidationToForm) return;
     removeValidationRule = addValidationToForm(id, fieldValid);
   });
 

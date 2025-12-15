@@ -3,7 +3,7 @@
         <div class="transactions-page__header">
             <Button :icon="arrowLeft" severity="secondary" @click="router.back()"
                 class="transactions-page__header-button" />
-            <h1 class="gold-text">Транзакции</h1>
+            <h1 class="gold-text">{{ t('transactions.title') }}</h1>
             <Button :icon="filter" severity="secondary" @click="filterDrawerVisible = true"
                 class="transactions-page__header-button" />
         </div>
@@ -17,15 +17,16 @@
                     <div class="transactions-page__empty-icon">
                         <VIcon :icon="warning" />
                     </div>
-                    <p class="transactions-page__empty-text">Нет транзакций</p>
-                    <p class="transactions-page__empty-hint">Попробуйте изменить фильтры</p>
+                    <p class="transactions-page__empty-text">{{ t('transactions.noTransactions') }}</p>
+                    <p class="transactions-page__empty-hint">{{ t('transactions.tryFilters') }}</p>
                 </div>
                 <template v-else>
                     <div class="transactions-page__list">
-                        <TransactionGroup v-for="group in groupedTransactions" :key="group.date" :group="group" />
+                        <TransactionGroup v-for="group in groupedTransactions" :key="group.date" :group="group"
+                            @transaction-click="handleTransactionClick" />
                     </div>
                     <div v-if="hasMore" class="transactions-page__load-more">
-                        <Button label="Загрузить еще" severity="secondary" outlined @click="loadMoreTransactions" />
+                        <Button :label="t('common.loadMore')" severity="secondary" outlined @click="loadMoreTransactions" />
                     </div>
                 </template>
             </template>
@@ -33,19 +34,31 @@
 
         <TransactionFilterForm v-model:visible="filterDrawerVisible" :current-filters="currentFilters"
             @apply="handleApplyFilters" @reset="handleResetFilters" />
+
+        <VDrawer v-model:visible="detailsDrawerVisible">
+            <template #header>
+                <h2 class="transaction-details-drawer__title">{{ t('transactions.details') }}</h2>
+            </template>
+            <TransactionDetails v-if="selectedTransaction" :transaction="selectedTransaction" />
+        </VDrawer>
     </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useI18n } from 'vue-i18n';
 import { arrowLeft, filter, warning } from '@/assets/icons';
 import router from '@/router/router';
 import { Button, ProgressSpinner } from 'primevue';
+
+const { t } = useI18n();
 import VIcon from '@/components/UI/VIcon.vue';
+import VDrawer from '@/components/UI/VDrawer.vue';
 import TransactionGroup from '@/components/Transactions/TransactionGroup.vue';
 import TransactionFilterForm from '@/components/Transactions/TransactionFilterForm.vue';
-import type { GetTransactionsParams } from '@/composables/Transactions/types';
+import TransactionDetails from '@/components/Transactions/TransactionDetails.vue';
+import type { GetTransactionsParams, Transaction } from '@/composables/Transactions/types';
 import { useTransactionsStore } from '@/store/transactionsStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
 
@@ -62,6 +75,14 @@ const handleApplyFilters = async (filters: GetTransactionsParams) => {
 
 const handleResetFilters = async () => {
     await resetFilters();
+};
+
+const detailsDrawerVisible = ref(false);
+const selectedTransaction = ref<Transaction | null>(null);
+
+const handleTransactionClick = (transaction: Transaction) => {
+    selectedTransaction.value = transaction;
+    detailsDrawerVisible.value = true;
 };
 
 onMounted(async () => {
@@ -168,6 +189,13 @@ onMounted(async () => {
         display: flex;
         justify-content: center;
         padding: 2rem 0;
+    }
+}
+
+.transaction-details-drawer {
+    &__title {
+        font: var(--font-20-b);
+        margin: 0;
     }
 }
 </style>

@@ -2,7 +2,7 @@
     <div class="main-page">
         <MainHeader />
         <MainBalance />
-        <MainQuickInput />
+        <!-- <MainQuickInput /> -->
         <MainChart />
         <MainGrid />
         <MainTransactions />
@@ -13,7 +13,7 @@
 import MainChart from '@/components/Main/MainChart.vue';
 import MainHeader from '@/components/Main/MainHeader.vue';
 import MainBalance from '@/components/Main/MainBalance.vue';
-import MainQuickInput from '@/components/Main/MainQuickInput.vue';
+// import MainQuickInput from '@/components/Main/MainQuickInput.vue';
 import MainTransactions from '@/components/Main/MainTransactions.vue';
 import MainGrid from '@/components/Main/MainGrid.vue';
 </script>

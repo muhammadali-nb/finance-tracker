@@ -3,7 +3,7 @@
         <div class="categories-page__header">
             <Button :icon="arrowLeft" severity="secondary" @click="router.back()"
                 class="categories-page__header-button" />
-            <h1 class="gold-text">Категории</h1>
+            <h1 class="gold-text">{{ t('categories.title') }}</h1>
             <div class="categories-page__header-empty" />
         </div>
 
@@ -21,10 +21,10 @@
                     <VIcon :icon="warning" />
                 </div>
                 <p class="categories-page__empty-text">
-                    {{ selectedType !== 'all' ? 'Нет категорий этого типа' : 'Нет добавленных категорий' }}
+                    {{ selectedType !== 'all' ? t('categories.noCategoriesOfType') : t('categories.noCategories') }}
                 </p>
                 <p class="categories-page__empty-hint">
-                    {{ selectedType !== 'all' ? 'Попробуйте выбрать другой тип' : 'Добавьте первую категорию' }}
+                    {{ selectedType !== 'all' ? t('categories.tryOtherType') : t('categories.addFirst') }}
                 </p>
             </div>
             <div v-else class="categories-page__list">
@@ -34,27 +34,30 @@
         </div>
 
         <div class="categories-page__footer">
-            <Button label="Добавить категорию" fluid :icon="plus" @click="drawerVisible = true" />
+            <Button :label="t('categories.addCategory')" fluid :icon="plus" @click="drawerVisible = true" />
         </div>
         <CategoryForm v-model:visible="drawerVisible" :edit-data="formEditData" @submit="handleSubmitWrapper" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useI18n } from 'vue-i18n';
 import { arrowLeft, plus, arrowUpRight, arrowDownLeft, warning } from '@/assets/icons';
 import router from '@/router/router';
 import { Button, SelectButton, ProgressSpinner } from 'primevue';
+
+const { t } = useI18n();
 import CategoryForm from '@/components/Categories/CategoryForm.vue';
 import CategoryCard from '@/components/Categories/CategoryCard.vue';
 import VIcon from '@/components/UI/VIcon.vue';
 import type { Category, CategoryFormData } from '@/composables/Categories/types';
 import { CategoryType } from '@/composables/Categories/types';
-import { CATEGORY_TYPE_FILTER_OPTIONS } from '@/composables/Categories/data';
 import { useCategoriesStore } from '@/store/categoriesStore';
 import { useToastStore } from '@/store/toastsStore';
 import { onBeforeMount } from 'vue';
+import { useCategoryTypeFilterOptions } from '@/composables/data';
 
 const selectedType = ref<CategoryType | 'all'>('all');
 const categoriesStore = useCategoriesStore();
@@ -62,7 +65,7 @@ const { categories, drawerVisible, editingCategory, loading } = storeToRefs(cate
 const { loadCategoriesByType, removeCategory, handleSubmit: handleSubmitInStore, editCategory: editCategoryInStore } = categoriesStore;
 const $toast = useToastStore();
 
-const filterOptions = CATEGORY_TYPE_FILTER_OPTIONS;
+const filterOptions = useCategoryTypeFilterOptions();
 
 const filteredCategories = computed(() => {
     return categories.value;
@@ -99,8 +102,8 @@ const removeCategoryHandler = async (id: string) => {
     const category = categories.value.find((cat: Category) => cat.id === id);
     if (category?.is_default) {
         $toast.warning(
-            'Нельзя удалить категорию по умолчанию',
-            `Категория "${category.name}" является категорией по умолчанию и не может быть удалена`,
+            t('categories.cannotDeleteDefault'),
+            t('categories.defaultCategoryWarning', { name: category.name }),
             getCategoryIcon(category.type)
         );
         return;
@@ -108,7 +111,7 @@ const removeCategoryHandler = async (id: string) => {
     try {
         await removeCategory(id);
     } catch (error) {
-        $toast.error('Ошибка', 'Не удалось удалить категорию');
+        $toast.error(t('common.error'), t('categories.deleteError'));
     }
 };
 
@@ -116,7 +119,7 @@ const handleSubmitWrapper = async (data: CategoryFormData) => {
     try {
         await handleSubmitInStore(data);
     } catch (error) {
-        $toast.error('Ошибка', 'Не удалось сохранить категорию');
+        $toast.error(t('common.error'), t('categories.saveError'));
     }
 };
 

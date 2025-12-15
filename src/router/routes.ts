@@ -60,6 +60,14 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/settings',
+    name: 'settings',
+    component: () => import('@/pages/Settings.vue'),
+    meta: {
+      layout: 'Default',
+    },
+  },
+  {
     path: '/status/:type',
     name: 'status',
     component: () => import('@/pages/StatusPage.vue'),

@@ -13,19 +13,27 @@
         </div>
         <div class="transaction-group__transactions">
             <TransactionCard v-for="transaction in group.transactions" :key="transaction.id"
-                :transaction="transaction" />
+                :transaction="transaction" @click="handleTransactionClick" />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import type { TransactionGroup } from '@/composables/Transactions/types';
+import type { TransactionGroup, Transaction } from '@/composables/Transactions/types';
 import TransactionCard from './TransactionCard.vue';
 import { formatAmount } from '@/utils';
 
-defineProps<{
+const props = defineProps<{
     group: TransactionGroup;
 }>();
+
+const emit = defineEmits<{
+    (e: 'transaction-click', transaction: Transaction): void;
+}>();
+
+const handleTransactionClick = (transaction: Transaction) => {
+    emit('transaction-click', transaction);
+};
 </script>
 
 <style scoped lang="scss">

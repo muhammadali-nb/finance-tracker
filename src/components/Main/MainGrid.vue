@@ -1,37 +1,42 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { analitcs, book, categories, rounded } from '@/assets/icons';
 import VIcon from '../UI/VIcon.vue';
 import { Button } from 'primevue';
-const items = [
+
+const { t } = useI18n();
+
+const items = computed(() => [
   {
     id: 1,
-    title: 'Лимиты',
+    title: t('limits.title'),
     icon: rounded,
     color: 'var(--primary-500)',
     link: '/limits'
   },
   {
     id: 2,
-    title: 'Категории',
+    title: t('categories.title'),
     icon: categories,
     color: 'var(--p-blue-500)',
     link: '/categories'
   },
   {
     id: 3,
-    title: 'Долги',
+    title: t('debts.title'),
     icon: book,
     color: 'var(--p-red-500)',
     link: '/debts'
   },
   {
     id: 4,
-    title: 'Аналитика',
+    title: t('analytics.title'),
     icon: analitcs,
     color: '#8b00ff',
     link: '/analytics'
   }
-];
+]);
 //   {
 //     id: 1,
 //     title: 'Лимиты',

@@ -1,40 +1,40 @@
 <template>
     <VDrawer v-model:visible="localVisible" @update:visible="handleVisibilityChange">
         <template #header>
-            <h2 class="debt-form__title">{{ isEditMode ? 'Редактировать долг' : 'Добавить долг' }}</h2>
+            <h2 class="debt-form__title">{{ isEditMode ? t('debts.editDebt') : t('debts.addDebt') }}</h2>
         </template>
 
         <VForm @submit-form="handleSubmit" class="debt-form__form-wrapper">
             <div class="debt-form__form">
                 <div class="debt-form__form-section">
                     <VSelect v-model="formData.type" :options="typeOptions" option-label="label" option-value="value"
-                        placeholder="Выберите тип долга" label="Тип долга" :rules="typeRules" size="small"
+                        :placeholder="t('debts.selectDebtType')" :label="t('debts.type')" :rules="typeRules" size="small"
                         class="font-14-r" />
                 </div>
 
                 <div class="debt-form__form-section">
-                    <VInputText v-model="formData.person_name" placeholder="Введите имя человека" label="Имя"
+                    <VInputText v-model="formData.person_name" :placeholder="t('debts.enterPersonName')" :label="t('debts.personName')"
                         :rules="nameRules" size="small" class="font-14-r" />
                 </div>
 
                 <div class="debt-form__form-section">
                     <VInputNumber v-model="formData.amount" class="font-14-r" :min="0" :max-fraction-digits="0"
-                        suffix=" UZS" placeholder="0" label="Сумма" :rules="amountRules" />
+                        suffix=" UZS" placeholder="0" :label="t('debts.amount')" :rules="amountRules" />
                 </div>
 
                 <div class="debt-form__form-section">
-                    <VInputText v-model="formData.description" placeholder="Описание (необязательно)" label="Описание"
+                    <VInputText v-model="formData.description" :placeholder="t('debts.descriptionOptional')" :label="t('debts.description')"
                         size="small" class="font-14-r" />
                 </div>
 
                 <div class="debt-form__form-section">
-                    <VInputText v-model="formData.due_date" type="date" label="Срок возврата (необязательно)"
+                    <VInputText v-model="formData.due_date" type="date" :label="t('debts.dueDateOptional')"
                         size="small" class="font-14-r" />
                 </div>
             </div>
 
             <div class="debt-form__footer">
-                <Button :label="isEditMode ? 'Сохранить изменения' : 'Добавить долг'" type="submit" fluid
+                <Button :label="isEditMode ? t('common.save') : t('debts.addDebt')" type="submit" fluid
                     severity="primary" class="debt-form__submit" />
             </div>
         </VForm>
@@ -43,6 +43,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button } from 'primevue';
 import VDrawer from '@/components/UI/VDrawer.vue';
 import VForm from '@/components/Form/VForm.vue';
@@ -52,6 +53,8 @@ import VSelect from '@/components/Form/VSelect.vue';
 import type { FormRule } from '@/composables/Form/types';
 import type { DebtFormData } from '@/composables/Debts/types';
 import { DebtType, DebtStatus } from '@/composables/Debts/types';
+
+const { t } = useI18n();
 
 const props = withDefaults(
     defineProps<{
@@ -71,10 +74,10 @@ const emit = defineEmits<{
 const localVisible = ref(props.visible);
 const isEditMode = computed(() => !!props.editData);
 
-const typeOptions = [
-    { label: 'Я занял(а)', value: DebtType.I_OWE },
-    { label: 'Мне должны', value: DebtType.OWE_ME },
-];
+const typeOptions = computed(() => [
+    { label: t('debts.iOwe'), value: DebtType.I_OWE },
+    { label: t('debts.oweMe'), value: DebtType.OWE_ME },
+]);
 
 watch(() => props.visible, (newValue) => {
     localVisible.value = newValue;
@@ -124,22 +127,22 @@ const formData = ref<DebtFormData>({
 
 const nameRules: FormRule<string>[] = [
     (value) => {
-        if (!value || value.trim().length === 0) return 'Введите имя человека';
-        if (value.trim().length < 2) return 'Имя должно содержать минимум 2 символа';
+        if (!value || value.trim().length === 0) return t('debts.enterPersonNameError');
+        if (value.trim().length < 2) return t('debts.personNameMinLength');
         return true;
     },
 ];
 
 const typeRules: FormRule<string | number>[] = [
     (value) => {
-        if (!value) return 'Выберите тип долга';
+        if (!value) return t('debts.selectDebtType');
         return true;
     },
 ];
 
 const amountRules: FormRule<number>[] = [
     (value) => {
-        if (!value || value <= 0) return 'Введите сумму больше 0';
+        if (!value || value <= 0) return t('limits.amountGreaterThanZero');
         return true;
     },
 ];

@@ -1,7 +1,7 @@
 <template>
     <div class="main-chart">
         <div class="main-chart__header">
-            <h1 class="font-20-b gold-text">Категории</h1>
+            <h1 class="font-20-b gold-text">{{ t('main.categories') }}</h1>
         </div>
         <div ref="chartWrapperRef" class="main-chart__container-wrapper">
             <VChart ref="chartRef" :option="chartOption" class="main-chart__container" @click="handleChartClick" />
@@ -11,7 +11,7 @@
                     <h2 class="main-chart__center-value font-30-b gold-text">{{ formattedCenterValue }}</h2>
                 </div>
                 <div v-else class="main-chart__center">
-                    <p class="main-chart__center-label font-14-r">Текущий баланс</p>
+                    <p class="main-chart__center-label font-14-r">{{ t('main.currentBalance') }}</p>
                     <h2 class="main-chart__center-value font-30-b gold-text">{{ formattedBalance }}</h2>
                 </div>
             </Transition>
@@ -30,19 +30,29 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useI18n } from 'vue-i18n';
 import { onClickOutside } from '@vueuse/core';
 
 import VChart from 'vue-echarts';
 import type { EChartsOption } from 'echarts';
 import { formatAmountShort } from '@/utils';
-import { useAnalyticsStore } from '@/store/analyticsStore';
+import { useBalanceStore } from '@/store/balanceStore';
+import { useCategoriesChartStore } from '@/store/categoriesChartStore';
 
-const analyticsStore = useAnalyticsStore();
+const { t } = useI18n();
+
+const balanceStore = useBalanceStore();
+const { balance: balanceData } = storeToRefs(balanceStore);
+const { loadBalance } = balanceStore;
+
+const categoriesChartStore = useCategoriesChartStore();
+const { categoryBreakdown, isLoaded } = storeToRefs(categoriesChartStore);
+const { loadCategories } = categoriesChartStore;
 
 const chartRef = ref<InstanceType<typeof VChart> | null>(null);
 const chartWrapperRef = ref<HTMLElement | null>(null);
 const selectedCategory = ref<string | null>(null);
-const isDataLoaded = ref(false);
 
 // Сброс выбора при клике вне графика
 onClickOutside(chartWrapperRef, () => {
@@ -51,16 +61,16 @@ onClickOutside(chartWrapperRef, () => {
     }
 });
 
-// Данные из store
+// Данные
 const balance = computed(() => {
-    return analyticsStore.balance ? parseFloat(analyticsStore.balance.balance) : 0;
+    return balanceData.value ? parseFloat(balanceData.value.balance) : 0;
 });
 
 const expensesData = computed(() => {
-    if (!analyticsStore.categoryBreakdown) {
+    if (!categoryBreakdown.value) {
         return [];
     }
-    return analyticsStore.categoryBreakdown.categories.map((cat) => ({
+    return categoryBreakdown.value.categories.map((cat: any) => ({
         name: cat.category_name,
         value: parseFloat(cat.amount),
         percentage: cat.percentage.toString(),
@@ -93,9 +103,9 @@ const handleChartClick = (params: any) => {
 const centerLabel = computed(() => {
     if (selectedCategory.value) {
         const category = expensesData.value.find(c => c.name === selectedCategory.value);
-        return category?.name || 'Текущий баланс';
+        return category?.name || t('main.currentBalance');
     }
-    return 'Текущий баланс';
+    return t('main.currentBalance');
 });
 
 const formattedCenterValue = computed(() => {
@@ -121,13 +131,15 @@ const initChartClickHandler = () => {
 // Загружаем данные при монтировании
 onMounted(async () => {
     try {
-        // Загружаем данные (используем force для гарантии загрузки)
         await Promise.all([
-            analyticsStore.loadBalance({ period: 'month' }, true),
-            analyticsStore.loadCategories({ period: 'month', type: 'expense' }, true),
+            loadBalance({ period: 'month' }), // Используем store, чтобы избежать дублирования запроса
+            loadCategories({ period: 'month', type: 'expense' }), // Используем store для кеширования
         ]);
-        isDataLoaded.value = true;
-        initChartClickHandler();
+        
+        // Инициализируем обработчик клика
+        if (categoryBreakdown.value) {
+            initChartClickHandler();
+        }
     } catch (error) {
         console.error('Failed to load chart data:', error);
     }
@@ -137,18 +149,18 @@ onMounted(async () => {
 watch(
     () => expensesData.value.length,
     (newLength) => {
-        if (isDataLoaded.value && newLength > 0) {
+        if (isLoaded.value && newLength > 0) {
             initChartClickHandler();
         }
     },
     { immediate: true }
 );
 
-// Также следим за изменениями categoryBreakdown из store
+// Также следим за изменениями categoryBreakdown
 watch(
-    () => analyticsStore.categoryBreakdown,
+    () => categoryBreakdown.value,
     () => {
-        if (analyticsStore.categoryBreakdown && isDataLoaded.value) {
+        if (categoryBreakdown.value && isLoaded.value) {
             initChartClickHandler();
         }
     }
@@ -158,7 +170,9 @@ const chartOption = computed<EChartsOption>(() => ({
     tooltip: {
         show: false,
     },
-    animation: true,
+    // Отключаем анимацию если данные уже были загружены (повторное монтирование)
+    // Это предотвращает перерисовку графика при возврате на страницу
+    animation: !isLoaded.value,
     animationType: 'scale',
     animationDuration: 1000,
     animationEasing: 'cubicOut',

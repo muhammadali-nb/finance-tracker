@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed, onBeforeMount } from 'vue';
+import { computed, onBeforeMount, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import { Button } from 'primevue';
 import TransactionCard from '@/components/Transactions/TransactionCard.vue';
+import TransactionDetails from '@/components/Transactions/TransactionDetails.vue';
+import VDrawer from '@/components/UI/VDrawer.vue';
 import { useTransactionsStore } from '@/store/transactionsStore';
 import { useCategoriesStore } from '@/store/categoriesStore';
-import { getStartOfDayString } from '@/utils';
+import { getStartOfDayString, formatDateToAPIDatetime } from '@/utils';
+import type { Transaction } from '@/composables/Transactions/types';
 
 const router = useRouter();
 const transactionsStore = useTransactionsStore();
@@ -26,19 +29,26 @@ const handleViewAll = () => {
     router.push({ name: 'transactions' });
 };
 
+const detailsDrawerVisible = ref(false);
+const selectedTransaction = ref<Transaction | null>(null);
+
+const handleTransactionClick = (transaction: Transaction) => {
+    selectedTransaction.value = transaction;
+    detailsDrawerVisible.value = true;
+};
+
 onBeforeMount(async () => {
     // Загружаем только транзакции за сегодня (один день)
-    // Используем формат YYYY-MM-DD для избежания проблем с часовыми поясами
+    // Преобразуем дату в формат datetime для API (T00:00:00 для начала, T23:59:59 для конца)
     const todayDateString = getStartOfDayString();
-
-    // Сохраняем старые фильтры, чтобы восстановить их после загрузки (если нужно)
-    const oldFilters = transactionsStore.currentFilters;
+    const startDate = formatDateToAPIDatetime(todayDateString, false); // 00:00:00
+    const endDate = formatDateToAPIDatetime(todayDateString, true); // 23:59:59
 
     await Promise.all([
         loadCategories(),
         loadTransactions({
-            start_date: todayDateString,
-            end_date: todayDateString,
+            start_date: startDate,
+            end_date: endDate,
             page_size: 10, // Ограничиваем количество для главной страницы
         }, false, true) // force = true, чтобы всегда загружать свежие данные для главной страницы
     ]);
@@ -63,11 +73,18 @@ onBeforeMount(async () => {
         </div>
         <div v-else-if="todayTransactions && todayTransactions.transactions.length > 0" class="main-transactions__list">
             <TransactionCard v-for="transaction in todayTransactions.transactions.slice(0, 5)" :key="transaction.id"
-                :transaction="transaction" />
+                :transaction="transaction" @click="handleTransactionClick" />
         </div>
         <div v-else class="main-transactions__empty">
             <p class="font-14-r">Нет транзакций за сегодня</p>
         </div>
+
+        <VDrawer v-model:visible="detailsDrawerVisible">
+            <template #header>
+                <h2 class="transaction-details-drawer__title">Детали транзакции</h2>
+            </template>
+            <TransactionDetails v-if="selectedTransaction" :transaction="selectedTransaction" />
+        </VDrawer>
     </div>
 </template>
 
@@ -123,6 +140,13 @@ onBeforeMount(async () => {
         position: relative;
         z-index: 1;
         color: var(--text-color-secondary);
+    }
+}
+
+.transaction-details-drawer {
+    &__title {
+        font: var(--font-20-b);
+        margin: 0;
     }
 }
 </style>

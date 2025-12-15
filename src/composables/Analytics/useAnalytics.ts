@@ -1,9 +1,12 @@
 import { computed, ref, onMounted, watch } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useI18n } from 'vue-i18n';
 import type { EChartsOption } from 'echarts';
 import { MONTHS_SHORT, DAYS_SHORT } from '@/composables/Categories/data';
 import { formatAmountShort, formatDateLabel } from '@/utils';
-import { useAnalyticsStore } from '@/store/analyticsStore';
-import type { Period } from './types';
+import { useAnalyticsRequests } from '@/composables/Analytics/requests';
+import { useBalanceStore } from '@/store/balanceStore';
+import type { Period, SummaryResponse } from './types';
 
 // Экспортируем Period для обратной совместимости
 export type { Period };
@@ -34,21 +37,37 @@ export interface LineChartDataPoint {
 
 
 export const useAnalytics = () => {
-    const analyticsStore = useAnalyticsStore();
+    const { t } = useI18n();
+    const { getSummary } = useAnalyticsRequests();
+    const balanceStore = useBalanceStore();
+    const { balance: balanceDataFromStore } = storeToRefs(balanceStore);
+
     const selectedPeriod = ref<Period>('month');
     const selectedCategory = ref<string | null>(null);
+    const loading = ref(false);
+    const summaryData = ref<SummaryResponse | null>(null);
+    const categoriesData = ref<any>(null);
+    const trendsData = ref<any>(null);
 
     const fetchAnalyticsData = async () => {
         try {
+            loading.value = true;
             const granularity: 'hour' | 'day' = selectedPeriod.value === 'day' ? 'hour' : 'day';
-            // Используем summary для получения всех данных включая изменения
-            await analyticsStore.loadSummary({
+
+            // Загружаем summary для получения всех данных включая изменения
+            const summary = await getSummary({
                 period: selectedPeriod.value,
                 type: 'expense',
                 granularity,
             });
+            summaryData.value = summary;
+
+            // Также загружаем баланс в store
+            await balanceStore.loadBalance({ period: selectedPeriod.value });
         } catch (error) {
             console.error('Failed to fetch analytics data:', error);
+        } finally {
+            loading.value = false;
         }
     };
 
@@ -61,23 +80,20 @@ export const useAnalytics = () => {
     });
 
     // Используем summary если доступен, иначе отдельные данные
-    const summaryData = computed(() => analyticsStore.summary);
-    const balanceData = computed(() => summaryData.value?.balance || analyticsStore.balance);
-    const categoriesData = computed(() => summaryData.value?.category_breakdown || analyticsStore.categoryBreakdown);
-    const trendsData = computed(() => {
-        const trends = summaryData.value?.trends || analyticsStore.trends;
+    const balanceData = computed(() => summaryData.value?.balance || balanceDataFromStore.value);
+    const categoriesDataComputed = computed(() => summaryData.value?.category_breakdown || categoriesData.value);
+    const trendsDataComputed = computed(() => {
+        const trends = summaryData.value?.trends || trendsData.value;
         if (!trends) {
             return [];
         }
-        return trends.data.map(point => ({
+        return trends.data.map((point: any) => ({
             time: formatDateLabel(point.date, selectedPeriod.value),
             value: parseFloat(point.expense),
         }));
     });
     const incomeTrend = computed(() => summaryData.value?.income_trend);
     const expenseTrend = computed(() => summaryData.value?.expense_trend);
-
-    const loading = computed(() => analyticsStore.loading);
 
     const stats = computed<StatCard>(() => {
         if (!balanceData.value) {
@@ -94,7 +110,7 @@ export const useAnalytics = () => {
         }
 
         const totalExpense = parseFloat(balanceData.value.total_expense);
-        const dataPoints = trendsData.value.length || 1;
+        const dataPoints = trendsDataComputed.value?.length || 1;
 
         const incomeChange = incomeTrend.value?.change_percentage || 0;
         const expenseChange = expenseTrend.value?.change_percentage || 0;
@@ -115,11 +131,11 @@ export const useAnalytics = () => {
     });
 
     const categoryData = computed<CategoryData[]>(() => {
-        if (!categoriesData.value) {
+        if (!categoriesDataComputed.value) {
             return [];
         }
 
-        return categoriesData.value.categories.map((cat) => ({
+        return categoriesDataComputed.value.categories.map((cat: any) => ({
             name: cat.category_name,
             value: parseFloat(cat.amount),
             percentage: cat.percentage.toString(),
@@ -133,7 +149,7 @@ export const useAnalytics = () => {
             .slice(0, 5);
     });
 
-    const lineChartData = computed(() => trendsData.value);
+    const lineChartData = computed(() => trendsDataComputed.value);
 
     const getCategoryAmount = (categoryName: string): number => {
         const category = categoryData.value.find(c => c.name === categoryName);
@@ -204,7 +220,7 @@ export const useAnalytics = () => {
         },
         series: [
             {
-                name: 'Расходы',
+                name: t('analytics.expenses'),
                 type: 'line',
                 smooth: true,
                 data: lineChartData.value.map(item => item.value),
@@ -299,7 +315,7 @@ export const useAnalytics = () => {
             },
             formatter: (params: any) => {
                 const param = Array.isArray(params) ? params[0] : params;
-                return `${param.name}<br/>Средний: ${formatAmountShort(param.value)} UZS`;
+                return `${param.name}<br/>${t('analytics.average')} ${formatAmountShort(param.value)} UZS`;
             },
         },
         grid: {
@@ -344,7 +360,7 @@ export const useAnalytics = () => {
         },
         series: [
             {
-                name: 'Расходы',
+                name: t('analytics.expenses'),
                 type: 'line',
                 smooth: true,
                 data: lineChartData.value.map(item => item.value),
@@ -371,7 +387,7 @@ export const useAnalytics = () => {
                 symbolSize: 6,
             },
             {
-                name: 'Средний тренд',
+                name: t('analytics.averageTrend'),
                 type: 'line',
                 smooth: true,
                 data: trendLineData.value,

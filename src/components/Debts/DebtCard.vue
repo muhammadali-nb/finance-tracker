@@ -16,7 +16,8 @@
                     </span>
                 </div>
                 <p v-if="debt.description" class="debt-card__description">{{ debt.description }}</p>
-                <p v-if="debt.due_date" class="debt-card__date">Срок: {{ formatDate(debt.due_date) }}</p>
+                <p v-if="debt.due_date" class="debt-card__date">{{ t('debts.dueDate') }}: {{ formatDate(debt.due_date)
+                }}</p>
             </div>
         </div>
         <div class="debt-card__menu-wrapper">
@@ -28,6 +29,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button, TieredMenu } from 'primevue';
 import type { MenuItem } from 'primevue/menuitem';
 import type { Debt } from '@/composables/Debts/types';
@@ -35,6 +37,8 @@ import { DebtType, DebtStatus } from '@/composables/Debts/types';
 import { menuDots, arrowUpRight, arrowDownLeft } from '@/assets/icons';
 import VIcon from '@/components/UI/VIcon.vue';
 import { formatAmount, formatDate } from '@/utils';
+
+const { t } = useI18n();
 
 const props = defineProps<{
     debt: Debt;
@@ -54,28 +58,28 @@ const toggleMenu = (event: Event) => {
 
 const statusLabel = computed(() => {
     const labels: Record<DebtStatus, string> = {
-        [DebtStatus.OPEN]: 'Открыт',
-        [DebtStatus.OVERDUE]: 'Просрочен',
-        [DebtStatus.PAID]: 'Погашен',
+        [DebtStatus.OPEN]: t('debts.open'),
+        [DebtStatus.OVERDUE]: t('debts.overdue'),
+        [DebtStatus.PAID]: t('debts.paid'),
     };
     return labels[props.debt.status];
 });
 
 const menuItems = computed<MenuItem[]>(() => [
     ...(props.debt.status !== DebtStatus.PAID ? [{
-        label: 'Отметить как погашенный',
+        label: t('debts.markAsPaid'),
         command: () => {
             emit('mark-paid');
         },
     }] : []),
     {
-        label: 'Редактировать',
+        label: t('common.edit'),
         command: () => {
             emit('edit');
         },
     },
     {
-        label: 'Удалить',
+        label: t('common.delete'),
         command: () => {
             emit('remove');
         },

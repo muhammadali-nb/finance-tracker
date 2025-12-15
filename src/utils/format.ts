@@ -150,6 +150,27 @@ export const getEndOfDayString = (date: Date = new Date()): string => {
 };
 
 /**
+ * Преобразует дату в формат datetime для API (YYYY-MM-DDTHH:mm:ss)
+ * @param dateString - строка с датой в формате YYYY-MM-DD
+ * @param isEndOfDay - если true, устанавливает время 23:59:59, иначе 00:00:00
+ * @returns Строка в формате YYYY-MM-DDTHH:mm:ss
+ */
+export const formatDateToAPIDatetime = (dateString: string, isEndOfDay = false): string => {
+    if (!dateString) {
+        return '';
+    }
+
+    // Если дата уже содержит время, возвращаем как есть
+    if (dateString.includes('T')) {
+        return dateString;
+    }
+
+    // Добавляем время в зависимости от isEndOfDay
+    const time = isEndOfDay ? '23:59:59' : '00:00:00';
+    return `${dateString}T${time}`;
+};
+
+/**
  * Форматирует дату для меток графиков в зависимости от периода
  * @param dateStr - строка с датой в формате "2024-12-14"
  * @param period - период (day, week, month, year)

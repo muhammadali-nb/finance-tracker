@@ -1,5 +1,5 @@
 <template>
-    <div class="transaction-card">
+    <div class="transaction-card" @click="handleClick">
         <div class="transaction-card__content">
             <div class="transaction-card__icon" :style="{ backgroundColor: categoryColor }">
                 <span class="transaction-card__emoji">{{ categoryIcon }}</span>
@@ -54,6 +54,14 @@ const categoryColor = computed(() => {
     const b = parseInt(hex.substring(4, 6), 16);
     return `rgba(${r}, ${g}, ${b}, 0.2)`;
 });
+
+const emit = defineEmits<{
+    (e: 'click', transaction: Transaction): void;
+}>();
+
+const handleClick = () => {
+    emit('click', props.transaction);
+};
 </script>
 
 <style scoped lang="scss">
@@ -70,6 +78,7 @@ const categoryColor = computed(() => {
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
+    cursor: pointer;
 
     &::before {
         content: '';

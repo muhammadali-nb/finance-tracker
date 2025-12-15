@@ -3,7 +3,7 @@
         <div class="main-balance__card">
             <div class="main-balance__total">
                 <div class="main-balance__total-content">
-                    <h5 class="font-14-r">Общий баланс</h5>
+                    <h5 class="font-14-r">{{ t('main.totalBalance') }}</h5>
                     <p v-if="isVisible" class="gold-text">{{ formatAmount(balance) }} UZS</p>
                     <p v-else class="gold-text">••••••</p>
                 </div>
@@ -15,15 +15,17 @@
                 <div class="main-balance__item">
                     <Button :icon="arrowUpRight" severity="danger" outlined class="main-balance__item-button" />
                     <div class="main-balance__item-content">
-                        <h5>Расход</h5>
-                        <p class="gold-text">{{ formatAmountWithSign(-expense) }} UZS</p>
+                        <h5>{{ t('main.expense') }}</h5>
+                        <p v-if="isVisible" class="gold-text">{{ formatAmountWithSign(-expense) }} UZS</p>
+                        <p v-else class="gold-text">••••••</p>
                     </div>
                 </div>
                 <div class="main-balance__item">
                     <Button :icon="arrowDownLeft" severity="success" outlined class="main-balance__item-button" />
                     <div class="main-balance__item-content">
-                        <h5>Доход</h5>
-                        <p class="gold-text">{{ formatAmountWithSign(income) }} UZS</p>
+                        <h5>{{ t('main.income') }}</h5>
+                        <p v-if="isVisible" class="gold-text">{{ formatAmountWithSign(income) }} UZS</p>
+                        <p v-else class="gold-text">••••••</p>
                     </div>
                 </div>
             </div>
@@ -32,14 +34,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useI18n } from 'vue-i18n';
 import { Button } from 'primevue';
 import { arrowDownLeft, arrowUpRight, eyeIcon, eyeClosedIcon } from '@/assets/icons';
 import VIcon from '../UI/VIcon.vue';
 import { formatAmount, formatAmountWithSign } from '@/utils';
-import { useAnalyticsStore } from '@/store/analyticsStore';
+import { useBalanceStore } from '@/store/balanceStore';
 
-const analyticsStore = useAnalyticsStore();
+const { t } = useI18n();
+
+const balanceStore = useBalanceStore();
+const { balance: balanceData } = storeToRefs(balanceStore);
+const { loadBalance } = balanceStore;
 
 const isVisible = ref(true);
 
@@ -48,20 +56,20 @@ const toggleVisibility = () => {
 };
 
 const balance = computed(() => {
-    return analyticsStore.balance ? parseFloat(analyticsStore.balance.balance) : 0;
+    return balanceData.value ? parseFloat(balanceData.value.balance) : 0;
 });
 
 const income = computed(() => {
-    return analyticsStore.balance ? parseFloat(analyticsStore.balance.total_income) : 0;
+    return balanceData.value ? parseFloat(balanceData.value.total_income) : 0;
 });
 
 const expense = computed(() => {
-    return analyticsStore.balance ? parseFloat(analyticsStore.balance.total_expense) : 0;
+    return balanceData.value ? parseFloat(balanceData.value.total_expense) : 0;
 });
 
 onMounted(async () => {
     try {
-        await analyticsStore.loadBalance({ period: 'month' });
+        await loadBalance({ period: 'month' });
     } catch (error) {
         console.error('Failed to load balance:', error);
     }

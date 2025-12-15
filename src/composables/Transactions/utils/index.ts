@@ -1,11 +1,13 @@
 import type { Transaction, TransactionGroup } from '../types';
 import { formatDate, formatDateToAPI } from '@/utils';
 import { MONTHS_FULL, DAYS_SHORT } from '@/composables/Categories/data';
+import { i18n } from '@/plugins/i18n';
 
 /**
  * Группирует транзакции по дням
  */
 export const groupTransactionsByDay = (transactions: Transaction[]): TransactionGroup[] => {
+    const t = i18n.global.t;
     const groupsMap = new Map<string, Transaction[]>();
 
     transactions.forEach(transaction => {
@@ -27,9 +29,9 @@ export const groupTransactionsByDay = (transactions: Transaction[]): Transaction
 
         let dateLabel = '';
         if (transactionDate.toDateString() === today.toDateString()) {
-            dateLabel = 'Сегодня';
+            dateLabel = t('common.today');
         } else if (transactionDate.toDateString() === yesterday.toDateString()) {
-            dateLabel = 'Вчера';
+            dateLabel = t('common.yesterday');
         } else {
             const dayOfWeek = transactionDate.getDay();
             const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;

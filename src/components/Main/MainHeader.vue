@@ -1,5 +1,5 @@
 <template>
-    <div class="main-header">
+    <div class="main-header" @click="handleClick">
         <div class="main-header__content">
             <div class="main-header__content-avatar">
                 <img src="https://img.freepik.com/free-psd/3d-render-avatar-character_23-2150611765.jpg?semt=ais_hybrid&w=740&q=80"
@@ -7,16 +7,39 @@
             </div>
             <div class="main-header__content-info">
                 <h1>
-                    Привет, Ali
+                    {{ t('main.greeting', { username: userData?.username || t('main.user') }) }}
                 </h1>
-                <p>Твой умный трекер расходов</p>
+                <p>{{ t('main.smartTracker') }}</p>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import { useUserStore } from '@/store/userStore';
 
+const { t } = useI18n();
+
+const router = useRouter();
+const userStore = useUserStore();
+const { user: userData } = storeToRefs(userStore);
+const { loadUser } = userStore;
+
+onMounted(async () => {
+    try {
+        await loadUser();
+    } catch (error) {
+        console.error('Failed to load user data:', error);
+    }
+});
+
+const handleClick = () => {
+    router.push({ name: 'settings' });
+};
 </script>
 
 <style scoped lang="scss">
@@ -24,6 +47,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 0.8;
+    }
 
     &__content {
         display: flex;

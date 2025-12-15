@@ -3,7 +3,7 @@
         <div class="analytics-page__header">
             <Button :icon="arrowLeft" severity="secondary" @click="router.back()"
                 class="analytics-page__header-button" />
-            <h1 class="gold-text">Аналитика</h1>
+            <h1 class="gold-text">{{ t('analytics.title') }}</h1>
             <div class="analytics-page__header-empty" />
         </div>
 
@@ -20,7 +20,7 @@
                 <div class="analytics-page__stat-card">
                     <div class="analytics-page__stat-card-header">
                         <VIcon :icon="arrowUpRight" class="analytics-page__stat-card-icon income" />
-                        <span class="analytics-page__stat-card-label">Доходы</span>
+                        <span class="analytics-page__stat-card-label">{{ t('analytics.income') }}</span>
                     </div>
                     <p class="analytics-page__stat-card-value gold-text">{{ formatAmount(stats.income) }} UZS</p>
                     <div class="analytics-page__stat-card-change" :class="{ positive: stats.incomeChange > 0 }">
@@ -33,7 +33,7 @@
                 <div class="analytics-page__stat-card">
                     <div class="analytics-page__stat-card-header">
                         <VIcon :icon="arrowDownLeft" class="analytics-page__stat-card-icon expense" />
-                        <span class="analytics-page__stat-card-label">Расходы</span>
+                        <span class="analytics-page__stat-card-label">{{ t('analytics.expenses') }}</span>
                     </div>
                     <p class="analytics-page__stat-card-value gold-text">{{ formatAmount(stats.expense) }} UZS</p>
                     <div class="analytics-page__stat-card-change" :class="{ positive: stats.expenseChange < 0 }">
@@ -46,7 +46,7 @@
                 <div class="analytics-page__stat-card">
                     <div class="analytics-page__stat-card-header">
                         <VIcon :icon="dollar" class="analytics-page__stat-card-icon balance" />
-                        <span class="analytics-page__stat-card-label">Баланс</span>
+                        <span class="analytics-page__stat-card-label">{{ t('analytics.balance') }}</span>
                     </div>
                     <p class="analytics-page__stat-card-value gold-text">{{ formatAmount(stats.balance) }} UZS</p>
                     <div class="analytics-page__stat-card-change" :class="{ positive: stats.balanceChange > 0 }">
@@ -59,7 +59,7 @@
                 <div class="analytics-page__stat-card">
                     <div class="analytics-page__stat-card-header">
                         <VIcon :icon="analitcs" class="analytics-page__stat-card-icon average" />
-                        <span class="analytics-page__stat-card-label">Средний расход</span>
+                        <span class="analytics-page__stat-card-label">{{ t('analytics.averageExpense') }}</span>
                     </div>
                     <p class="analytics-page__stat-card-value gold-text">{{ formatAmount(stats.averageExpense) }} UZS
                     </p>
@@ -74,7 +74,7 @@
             <div class="analytics-page__content">
                 <div class="analytics-page__chart-card">
                     <div class="analytics-page__chart-card-header">
-                        <h2 class="font-18-b gold-text">Динамика</h2>
+                        <h2 class="font-18-b gold-text">{{ t('analytics.dynamics') }}</h2>
                     </div>
                     <div class="analytics-page__chart-wrapper">
                         <VChart :option="lineChartOption" class="analytics-page__chart" />
@@ -83,7 +83,7 @@
 
                 <div class="analytics-page__chart-card">
                     <div class="analytics-page__chart-card-header">
-                        <h2 class="font-18-b gold-text">Средний тренд</h2>
+                        <h2 class="font-18-b gold-text">{{ t('analytics.averageTrend') }}</h2>
                     </div>
                     <div class="analytics-page__chart-wrapper">
                         <VChart :option="trendChartOption" class="analytics-page__chart" />
@@ -92,7 +92,7 @@
 
                 <div class="analytics-page__chart-card">
                     <div class="analytics-page__chart-card-header">
-                        <h2 class="font-18-b gold-text">Расходы по категориям</h2>
+                        <h2 class="font-18-b gold-text">{{ t('analytics.expensesByCategory') }}</h2>
                     </div>
                     <div ref="pieChartWrapperRef" class="analytics-page__chart-wrapper pie">
                         <VChart ref="pieChartRef" :option="pieChartOption" class="analytics-page__chart" />
@@ -104,7 +104,7 @@
                                 </h2>
                             </div>
                             <div v-else class="analytics-page__chart-center">
-                                <p class="analytics-page__chart-center-label font-14-r">Всего расходов</p>
+                                <p class="analytics-page__chart-center-label font-14-r">{{ t('main.totalExpenses') }}</p>
                                 <h2 class="analytics-page__chart-center-value font-30-b gold-text">
                                     {{ formatAmount(stats.expense) }}
                                 </h2>
@@ -125,14 +125,14 @@
 
                 <div class="analytics-page__top-categories">
                     <div class="analytics-page__top-categories-header">
-                        <h2 class="font-18-b gold-text">Топ категорий</h2>
+                        <h2 class="font-18-b gold-text">{{ t('analytics.topCategories') }}</h2>
                     </div>
                     <div v-if="topCategories.length === 0" class="analytics-page__empty">
                         <div class="analytics-page__empty-icon">
                             <VIcon :icon="warning" />
                         </div>
-                        <p class="analytics-page__empty-text">Нет данных</p>
-                        <p class="analytics-page__empty-hint">Добавьте транзакции для анализа</p>
+                        <p class="analytics-page__empty-text">{{ t('analytics.noData') }}</p>
+                        <p class="analytics-page__empty-hint">{{ t('analytics.addTransactions') }}</p>
                     </div>
                     <div v-else class="analytics-page__top-categories-list">
                         <div v-for="(category, index) in topCategories" :key="category.name"
@@ -158,7 +158,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { onClickOutside } from '@vueuse/core';
 import { Button, SelectButton, ProgressSpinner } from 'primevue';
 import VChart from 'vue-echarts';
@@ -167,6 +168,8 @@ import router from '@/router/router';
 import VIcon from '@/components/UI/VIcon.vue';
 import { useAnalytics } from '@/composables/Analytics/useAnalytics';
 import type { Period } from '@/composables/Analytics/types';
+
+const { t } = useI18n();
 
 const {
     selectedPeriod,
@@ -186,12 +189,12 @@ const {
 const pieChartRef = ref<InstanceType<typeof VChart> | null>(null);
 const pieChartWrapperRef = ref<HTMLElement | null>(null);
 
-const periodOptions = [
-    { label: 'День', value: 'day' as Period },
-    { label: 'Неделя', value: 'week' as Period },
-    { label: 'Месяц', value: 'month' as Period },
-    { label: 'Год', value: 'year' as Period },
-];
+const periodOptions = computed(() => [
+    { label: t('analytics.day'), value: 'day' as Period },
+    { label: t('analytics.week'), value: 'week' as Period },
+    { label: t('analytics.month'), value: 'month' as Period },
+    { label: t('analytics.year'), value: 'year' as Period },
+]);
 
 // Сброс выбора при клике вне графика
 onClickOutside(pieChartWrapperRef, () => {
